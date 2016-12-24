@@ -3,6 +3,6 @@ module Raven.Types ( Expr(..)
                    ) where
 
 
-data Expr = RLeftParen  -- TODO other expression types (start with bool)
-          | RBool (Bool)
+data Expr = RBool (Bool)
+          | RString (String)
   deriving (Eq, Show)

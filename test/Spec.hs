@@ -1,7 +1,7 @@
 
 import Test.Tasty
 import Test.Tasty.Hspec as Hspec
-import qualified ParserSpec
+import qualified Raven.ParserSpec
 
 
 main :: IO ()
@@ -12,6 +12,6 @@ main = do
 
 mainSpec :: Spec
 mainSpec = do
-    describe "ParserSpec" ParserSpec.spec
+    describe "ParserSpec" Raven.ParserSpec.spec
     -- describe "OtherSpec" OtherSpec.spec
 

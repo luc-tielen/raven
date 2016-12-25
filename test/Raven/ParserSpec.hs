@@ -5,7 +5,7 @@ import Test.Tasty.Hspec
 import Test.QuickCheck
 import Text.Parsec hiding (parse, string)
 import Raven.Types
-import Raven.Parser (parse, bool, string)
+import Raven.Parser (parse, bool, string, comment)
 
 
 spec :: Spec
@@ -45,4 +45,15 @@ spec = describe "Parser" $ do
         parse string "\"a" `shouldNotBe` Right (RString "a")
         parse string "a\"" `shouldNotBe` Right (RString "a")
 
-        -- TODO quickcheck properties? -> custom generator?
+
+    describe "parsing comments" $ do
+      it "should be able to parse valid comments" $ do
+        parse comment ";;" `shouldBe` Right (RComment "")
+        parse comment ";;a" `shouldBe` Right (RComment "a")
+        parse comment ";; a" `shouldBe` Right (RComment " a")
+        parse comment ";; a\n" `shouldBe` Right (RComment " a")
+        
+      it "should fail to parse invalid comments" $ do
+        parse comment "" `shouldNotBe` Right (RComment "") 
+        parse comment ";" `shouldNotBe` Right (RComment "") 
+        parse comment "; ;" `shouldNotBe` Right (RComment "") 

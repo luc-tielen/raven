@@ -1,13 +1,14 @@
 
 {-# LANGUAGE FlexibleContexts #-}
 
-module Raven.Parser ( bool
-                    , parse
+module Raven.Parser ( parse
+                    , bool
                     , string
+                    , comment
                     ) where
 
 import Text.Parsec.String (Parser)
-import Text.Parsec.Char (char)
+import Text.Parsec.Char (char, newline)
 import Text.Parsec (Parsec, ParseError, Stream, (<|>), many, noneOf)
 import qualified Text.Parsec (parse, string)
 import Data.Functor.Identity
@@ -28,3 +29,6 @@ string' = Text.Parsec.string
 string :: Parser Expr
 string = RString <$> (char '\"' *> stringCharacters <* char '\"')
   where stringCharacters = many $ noneOf "\"" 
+
+comment :: Parser Expr
+comment = RComment <$> (string' ";;" *> (many $ noneOf "\n"))

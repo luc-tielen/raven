@@ -5,10 +5,11 @@ module Raven.Parser ( parse
                     , bool
                     , string
                     , comment
+                    , symbol
                     ) where
 
 import Text.Parsec.String (Parser)
-import Text.Parsec.Char (char, newline)
+import Text.Parsec.Char (char, newline, letter, alphaNum, oneOf)
 import Text.Parsec (Parsec, ParseError, Stream, (<|>), many, noneOf)
 import qualified Text.Parsec (parse, string)
 import Data.Functor.Identity
@@ -32,3 +33,11 @@ string = RString <$> (char '\"' *> stringCharacters <* char '\"')
 
 comment :: Parser Expr
 comment = RComment <$> (string' ";;" *> (many $ noneOf "\n"))
+
+symbol :: Parser Expr
+symbol = RSymbol <$> symbolParser
+  where symbolParser = do
+          firstChar <- letter
+          restChars <- many symbolChars
+          return (firstChar : restChars)
+        symbolChars = alphaNum <|> oneOf "+-.*/<=>!?$%_&^,~"

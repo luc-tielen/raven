@@ -34,7 +34,8 @@ test-suite raven-test
   type:                exitcode-stdio-1.0
   hs-source-dirs:      test
   main-is:             Spec.hs
-  other-modules:       Raven.ParserSpec
+  other-modules:       Raven.ParserSpec 
+                     , Raven.TypesSpec
   build-depends:       base
                      , raven
                      , parsec >= 3.1 && < 4

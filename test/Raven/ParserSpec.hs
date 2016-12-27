@@ -3,7 +3,7 @@ module Raven.ParserSpec ( spec ) where
 
 import Test.Tasty.Hspec
 import Test.QuickCheck
-import Text.Parsec hiding (parse, string)
+import Text.Megaparsec hiding (parse, string)
 import Raven.Types
 import Raven.Parser (parse, bool, string, number, comment, symbol)
 

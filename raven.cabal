@@ -1,6 +1,6 @@
 name:                raven
 version:             0.1.0.0
-synopsis:            Scheme implementation, written in Haskell
+synopsis:            Scheme dialect, written in Haskell
 description:         Please see README.md
 homepage:            https://github.com/luc-tielen/raven#README.md
 license:             BSD3
@@ -20,7 +20,7 @@ library
                      , Raven.Types
                      , Raven.Parser
   build-depends:       base >= 4.7 && < 5
-                     , parsec >= 3.1 && < 4
+                     , megaparsec >= 5.0 && < 6
   default-language:    Haskell2010
 
 executable raven-exe
@@ -39,7 +39,7 @@ test-suite raven-test
                      , Raven.ParserSpec 
   build-depends:       base
                      , raven
-                     , parsec >= 3.1 && < 4
+                     , megaparsec >= 5.0 && < 6
                      , hspec >= 2.2 && < 3
                      , tasty >= 0.11 && < 1
                      , tasty-hspec >= 1.1 && < 2

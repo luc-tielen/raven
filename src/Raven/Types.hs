@@ -6,6 +6,7 @@ module Raven.Types ( Expr(..)
 
 data Expr = RBool Bool
           | RString String
+          | RNumber Number
           | RComment String
           | RSymbol String
   deriving (Eq, Show)

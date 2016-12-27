@@ -13,6 +13,6 @@ main = do
 
 mainSpec :: Spec
 mainSpec = do
-    describe "ParserSpec" Raven.TypesSpec.spec
+    describe "TypesSpec" Raven.TypesSpec.spec
     describe "ParserSpec" Raven.ParserSpec.spec
 

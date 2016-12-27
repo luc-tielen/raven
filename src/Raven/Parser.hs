@@ -74,12 +74,16 @@ rational = RNumber <$> do
   denominator <- some digitChar
   return $ Rational (read nominator) (read denominator)
 
--- TODO double, rational
+real :: Parser Expr
+real = RNumber <$> do
+  value <- float
+  return $ Real value
+
 -- TODO simplifiy number parsers if possible using parsec helpers
   
 -- TODO how to handle int/float?
 number :: Parser Expr
-number = try rational <|> integer
+number = try real <|> try rational <|> integer
 
 
 -- Helper functions

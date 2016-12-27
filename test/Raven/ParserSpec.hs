@@ -111,13 +111,13 @@ spec = describe "Parser" $ do
         checkRat "1/2" 1 2
         checkRat "3/2" 3 2
 
-
-      --it "should be able to parse real (floating point) numbers" $ do
-        --let checkDouble a b = parse number a `shouldParse` RNumber (Real b)
-        --checkDouble "0.0" 0.0
-        --checkDouble "0.1" 0.1
-        --checkDouble "1.1" 1.1
-        --checkDouble "1e3" 1000
+      it "should be able to parse real (floating point) numbers" $ do
+        let checkDouble a b = parse number a `shouldParse` RNumber (Real b)
+        checkDouble "0.0" 0.0
+        checkDouble "0.1" 0.1
+        checkDouble "1.1" 1.1
+        checkDouble "1e3" 1000
+        checkDouble "1e-3" 0.001
         -- NOTE: negative floats not checked here, represented as (- F)
   
       --it "should be able to parse complex numbers" $ do

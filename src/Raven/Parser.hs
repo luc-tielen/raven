@@ -13,6 +13,7 @@ module Raven.Parser ( parse
 import Text.Megaparsec hiding (parse, string, string')
 import qualified Text.Megaparsec (parse, string, string')
 import Text.Megaparsec.Prim hiding (parse)
+import Text.Megaparsec.Lexer as L hiding (integer, number, symbol)
 import Text.Megaparsec.String
 import Data.Functor.Identity
 import Data.List (foldl')
@@ -27,11 +28,6 @@ bool :: Parser Expr
 bool = trueExpr <|> falseExpr
   where trueExpr = (stringS "true") >> return (RBool True)
         falseExpr = (stringS "false") >> return (RBool False)
-
-stringI :: (Token s ~ Char, Text.Megaparsec.Prim.MonadParsec e s m) => String -> m String
-stringI = Text.Megaparsec.string'  -- case insensitive
-stringS :: (Token s ~ Char, Text.Megaparsec.Prim.MonadParsec e s m) => String -> m String
-stringS = Text.Megaparsec.string   -- case sensitive
 
 string :: Parser Expr
 string = RString <$> (char '\"' *> stringCharacters <* char '\"')
@@ -71,15 +67,28 @@ integer = try hexInteger
        <|> try binaryInteger
        <|> decimalInteger
 
+rational :: Parser Expr
+rational = RNumber <$> do
+  nominator <- some digitChar
+  char '/'
+  denominator <- some digitChar
+  return $ Rational (read nominator) (read denominator)
+
 -- TODO double, rational
 -- TODO simplifiy number parsers if possible using parsec helpers
   
 -- TODO how to handle int/float?
 number :: Parser Expr
-number = integer
+number = try rational <|> integer
 
 
 -- Helper functions
 
 bin2dec :: String -> Int
 bin2dec = foldl' (\acc x -> acc * 2 + digitToInt x) 0
+
+stringI :: (Token s ~ Char, Text.Megaparsec.Prim.MonadParsec e s m) => String -> m String
+stringI = Text.Megaparsec.string'  -- case insensitive string helper
+
+stringS :: (Token s ~ Char, Text.Megaparsec.Prim.MonadParsec e s m) => String -> m String
+stringS = Text.Megaparsec.string   -- case sensitive string helper

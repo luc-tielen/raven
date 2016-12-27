@@ -105,6 +105,13 @@ spec = describe "Parser" $ do
         checkBin "0b11" 3
         checkBin "0b1000" 8
 
+      it "should be able to parse rational numbers" $ do
+        let checkRat a b c = parse number a `shouldParse` RNumber (Rational b c)
+        checkRat "1/1" 1 1
+        checkRat "1/2" 1 2
+        checkRat "3/2" 3 2
+
+
       --it "should be able to parse real (floating point) numbers" $ do
         --let checkDouble a b = parse number a `shouldParse` RNumber (Real b)
         --checkDouble "0.0" 0.0
@@ -123,5 +130,4 @@ spec = describe "Parser" $ do
         --checkComplex "1+0.1i" 1 0.1
         --checkComplex "0.1+0.1i" 0.1 0.1
 
-    -- TODO rational
     -- TODO check bad cases

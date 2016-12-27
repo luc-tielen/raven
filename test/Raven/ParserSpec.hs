@@ -120,14 +120,16 @@ spec = describe "Parser" $ do
         checkDouble "1e-3" 0.001
         -- NOTE: negative floats not checked here, represented as (- F)
   
-      --it "should be able to parse complex numbers" $ do
-        --let checkComplex a b c = parse number a `shouldParse` RNumber (Complex b c)
-        --let checkComplexI a b = checkComplex a 0 c
-        --checkComplexI "0i" 0
-        --checkComplexI "1i" 1
-        --checkComplexI "0.1i" 1
-        --checkComplex "1+1i" 1 1
-        --checkComplex "1+0.1i" 1 0.1
-        --checkComplex "0.1+0.1i" 0.1 0.1
+      it "should be able to parse complex numbers" $ do
+        let checkComplex a b c = parse number a `shouldParse` RNumber (Complex b c)
+        let checkComplexI a b = checkComplex a 0 b
+        checkComplexI "0i" 0
+        checkComplexI "0.1i" 0.1
+        checkComplexI "1i" 1
+        checkComplex "1+1i" 1 1
+        checkComplex "1+0.1i" 1 0.1
+        checkComplex "0.1+0.1i" 0.1 0.1
 
+    -- BAD CASE: checkComplexI "0.1e3i" 100  -- TODO fix this
     -- TODO check bad cases
+    -- TODO cleanup first tests

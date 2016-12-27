@@ -13,7 +13,7 @@ module Raven.Parser ( parse
 import Text.Megaparsec hiding (parse, string, string')
 import qualified Text.Megaparsec (parse, string, string')
 import Text.Megaparsec.Prim hiding (parse)
-import Text.Megaparsec.Lexer as L hiding (integer, number, symbol)
+import Text.Megaparsec.Lexer as L hiding (number, symbol)
 import Text.Megaparsec.String
 import Data.Functor.Identity
 import Data.List (foldl')
@@ -62,10 +62,10 @@ binaryInteger = RNumber . Integral <$> do
   return $ bin2dec binChars
 
 -- TODO avoid try...
-integer :: Parser Expr
-integer = try hexInteger
-       <|> try binaryInteger
-       <|> decimalInteger
+integral :: Parser Expr
+integral = try hexInteger
+        <|> try binaryInteger
+        <|> decimalInteger
 
 rational :: Parser Expr
 rational = RNumber <$> do
@@ -79,11 +79,30 @@ real = RNumber <$> do
   value <- float
   return $ Real value
 
+complex :: Parser Expr
+complex = RNumber <$> do
+  firstPart <- try signedFloatNoScientific <|> signedInteger
+  maybeSecondPart <- optional (try signedFloatNoScientific <|> signedInteger)
+  char 'i'
+  case maybeSecondPart of
+    Just secondPart -> return $ Complex firstPart secondPart
+    Nothing -> return $ Complex 0 firstPart
+  where signedFloatNoScientific = signed (return ()) floatNoScientific
+        floatNoScientific = do
+          val1 <- some digitChar
+          char '.'
+          val2 <- some digitChar
+          return $ ((read val1) :: Double) + ((read ("0." ++ val2)) :: Double)
+        signedInteger = fromIntegral <$> (signed (return ()) integer)
+
+
 -- TODO simplifiy number parsers if possible using parsec helpers
-  
--- TODO how to handle int/float?
+-- TODO avoid try
 number :: Parser Expr
-number = try real <|> try rational <|> integer
+number = try complex
+      <|> try real
+      <|> try rational
+      <|> integral
 
 
 -- Helper functions

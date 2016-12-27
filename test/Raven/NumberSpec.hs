@@ -1,13 +1,13 @@
 
-module Raven.TypesSpec ( spec ) where
+module Raven.NumberSpec ( spec ) where
 
 import Test.Tasty.Hspec
 import Test.QuickCheck
-import Raven.Types
+import Raven.Number
 
 
 spec :: Spec
-spec = describe "Numeric tower" $ do
+spec = describe "Numerical tower behavior" $ do
     describe "Eq" $ do
       it "should be possible to compare various numbers with each other" $ do
         Integral 1 == Integral 1 `shouldBe` True

@@ -16,6 +16,7 @@ cabal-version:       >=1.10
 library
   hs-source-dirs:      src
   exposed-modules:     Lib
+                     , Raven.Number
                      , Raven.Types
                      , Raven.Parser
   build-depends:       base >= 4.7 && < 5
@@ -34,8 +35,8 @@ test-suite raven-test
   type:                exitcode-stdio-1.0
   hs-source-dirs:      test
   main-is:             Spec.hs
-  other-modules:       Raven.ParserSpec 
-                     , Raven.TypesSpec
+  other-modules:       Raven.NumberSpec
+                     , Raven.ParserSpec 
   build-depends:       base
                      , raven
                      , parsec >= 3.1 && < 4

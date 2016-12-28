@@ -30,8 +30,9 @@ bool = trueExpr <|> falseExpr
         falseExpr = (stringS "false") >> return (RBool False)
 
 string :: Parser Expr
-string = RString <$> (char '\"' *> stringCharacters <* char '\"')
-  where stringCharacters = many $ noneOf "\"" 
+string = RString <$> between doubleQuote doubleQuote stringCharacters
+  where doubleQuote = char '\"'
+        stringCharacters = many $ noneOf "\"" 
 
 comment :: Parser Expr
 comment = RComment <$> (stringS ";;" >> (many $ noneOf "\n"))
@@ -64,9 +65,7 @@ rational = RNumber <$> do
   return $ Rational (read nominator) (read denominator)
 
 real :: Parser Expr
-real = RNumber <$> do
-  value <- float
-  return $ Real value
+real = RNumber . Real <$> float
 
 complex :: Parser Expr
 complex = RNumber <$> do

@@ -44,28 +44,17 @@ symbol = RSymbol <$> symbolParser
           return $ firstChar : restChars
         symbolChars = alphaNumChar <|> oneOf "+-.*/<=>!?$%_&^,~"
 
-decimalInteger :: Parser Expr
-decimalInteger = RNumber . Integral <$> do
-  integerChars <- some digitChar
-  return $ read integerChars
-
-hexInteger :: Parser Expr
-hexInteger = RNumber . Integral <$> do
-  hexPrefix <- stringS "0x"
-  hexChars <- some hexDigitChar
-  return $ read $ hexPrefix ++ hexChars
-
-binaryInteger :: Parser Expr
-binaryInteger = RNumber . Integral <$> do
-  binPrefix <- stringS "0b"
-  binChars <- some $ oneOf "01"
-  return $ bin2dec binChars
-
--- TODO avoid try...
 integral :: Parser Expr
-integral = try hexInteger
-        <|> try binaryInteger
-        <|> decimalInteger
+integral = RNumber . Integral <$> do
+  firstPart <- stringS "0x" <|> stringS "0b" <|> some digitChar
+  case firstPart of
+    "0x" -> do
+      hexDigits <- some hexDigitChar
+      return $ read $ "0x" ++ hexDigits
+    "0b" -> do
+      binDigits <- some $ oneOf "01"
+      return $ bin2dec binDigits
+    digits -> return $ read digits
 
 rational :: Parser Expr
 rational = RNumber <$> do
@@ -81,8 +70,8 @@ real = RNumber <$> do
 
 complex :: Parser Expr
 complex = RNumber <$> do
-  firstPart <- try signedFloatNoScientific <|> signedInteger
-  maybeSecondPart <- optional (try signedFloatNoScientific <|> signedInteger)
+  firstPart <- signedFloatNoScientific <||> signedInteger
+  maybeSecondPart <- optional $ signedFloatNoScientific <||> signedInteger
   char 'i'
   case maybeSecondPart of
     Just secondPart -> return $ Complex firstPart secondPart
@@ -92,20 +81,22 @@ complex = RNumber <$> do
           val1 <- some digitChar
           char '.'
           val2 <- some digitChar
-          return $ ((read val1) :: Double) + ((read ("0." ++ val2)) :: Double)
+          let units = (read val1) :: Double
+          let fractions = (read ("0." ++ val2)) :: Double
+          return $ units + fractions
         signedInteger = fromIntegral <$> (signed (return ()) integer)
 
-
--- TODO simplifiy number parsers if possible using parsec helpers
--- TODO avoid try
 number :: Parser Expr
-number = try complex
-      <|> try real
-      <|> try rational
-      <|> integral
+number = complex
+      <||> real
+      <||> rational
+      <||> integral
 
 
 -- Helper functions
+
+(<||>) :: Parser a -> Parser a -> Parser a
+a <||> b = try a <|> b
 
 bin2dec :: String -> Int
 bin2dec = foldl' (\acc x -> acc * 2 + digitToInt x) 0

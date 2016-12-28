@@ -11,9 +11,20 @@ data Number = Integral Int
             | Rational Nominator Denominator
             | Real Double
             | Complex RealPart ImagPart
-  deriving (Show)
 
 
+instance Show Number where
+  show (Integral a) = show a
+  show (Rational n d) = show n ++ "/" ++ show d
+  show (Real a) = show a
+  show (Complex r i) = stringRepresentation
+    where stringRepresentation = realPart ++ imagPart ++ "i"
+          realPart = if r == 0 then "" else show r
+          imagPart
+            | r /= 0 && i >= 0 = "+" ++ show i
+            | otherwise        = show i
+
+  
 -- TODO: forbid comparison on Double (with a 'SafeDouble' type)?
 instance Eq Number where
   Integral a == Integral b = a == b

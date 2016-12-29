@@ -3,13 +3,14 @@
 
 module Raven.Number ( Number(..) ) where
 
-type Nominator = Int
+import Data.Ratio
+type Numerator = Int
 type Denominator = Int
 type RealPart = Double
 type ImagPart = Double
 -- TODO rename to avoid name clashes with builtin haskell types
 data Number = Integral Int
-            | Rational Nominator Denominator  -- Assumes Denominator >= 0 (TODO enforce with type)
+            | Rational Numerator Denominator  -- Assumes Denominator >= 0 (TODO enforce with type)
             | Real Double
             | Complex RealPart ImagPart
 
@@ -62,7 +63,7 @@ instance Num Number where
   Rational n1 d1 - Rational n2 d2 = Rational (n1 * d2 - n2 * d1) (d1 * d2)  -- TODO simplify fraction?
   Rational n d - Real a = Real $ (fromIntegral n / fromIntegral d) - a
   Rational n d - Complex r i = Complex ((fromIntegral n / fromIntegral d) - r) (negate i)
-  Real b - Integral a = Real $ b -(fromIntegral a)
+  Real b - Integral a = Real $ b - (fromIntegral a)
   Real a - Rational n d = Real $ a - (fromIntegral n / fromIntegral d)
   Real a - Real b = Real $ a - b
   Real a - Complex r i = Complex (a - r) (negate i)
@@ -76,7 +77,7 @@ instance Num Number where
   Integral a * Real b = Real $ (fromIntegral a) * b
   Integral a * Complex r i = Complex (a' * r) (a' * i) where a' = fromIntegral a
   Rational n1 d1 * Rational n2 d2 = Rational (n1 * n2) (d1 * d2)  -- TODO simplify fraction?
-  Rational n d * Real a = Real $ a * fromIntegral n / fromIntegral d
+  Rational n d * Real a = Real $ a * (fromIntegral n / fromIntegral d)
   Rational n d * Complex r i = Complex (f * r) (f * i) where f = fromIntegral n / fromIntegral d
   Real a * Real b = Real $ a * b
   Real a * Complex r i = Complex (a * r) (a * i)
@@ -94,3 +95,34 @@ instance Num Number where
   signum (Complex _ _) = error "signum not supported for complex numbers!"
 
   fromInteger = Integral . fromInteger
+
+
+instance Fractional Number where
+  Integral a / Integral b = Rational a b  -- TODO simplify fraction?
+  Integral a / Rational n d = Rational (a * d) n  -- TODO simplify fraction?
+  Integral a / Real b = Real $ (fromIntegral a) / b
+  Integral a / Complex r i = Complex (fromIntegral a) 0 / Complex r i
+  Rational n d / Integral a = Rational n (a * d)  -- TODO simplify fraction?
+  Rational n1 d1 / Rational n2 d2 = Rational n1 d1 * Rational d2 n2  -- TODO simplify fraction?
+  Rational n d / Real a = Real $ (fromIntegral n / fromIntegral d) / a
+  Rational n d / Complex r i = Complex (fromIntegral n / fromIntegral d) 0 / Complex r i
+  Real b / Integral a = Real $ b / (fromIntegral a)
+  Real a / Rational n d = Real $ a / (fromIntegral n / fromIntegral d)
+  Real a / Real b = Real $ a / b
+  Real a / Complex r i = Complex a 0 / Complex r i
+  Complex r i / Integral a = Complex (r / a') (i / a') where a' = fromIntegral a
+  Complex r i / Rational n d = Complex (r / f) (i / f) where f = fromIntegral n / fromIntegral d
+  Complex r i / Real a = Complex (r / a) (i / a)
+  Complex r1 i1 / Complex r2 i2 = nominator / denominator
+    where nominator = Complex r1 i1 * Complex r2 i2'
+          denominator = Real $ (r2 * r2) + (i2' * i2')
+          i2' = negate i2
+
+  recip (Rational n d) = Rational d n
+  recip a = (Integral 1) / a
+
+  fromRational a = Rational n d
+    where n = fromInteger $ numerator a
+          d = fromInteger $ denominator a
+
+  -- TODO comparisons

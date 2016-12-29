@@ -4,6 +4,7 @@ module Raven.NumberSpec ( spec ) where
 import Test.Tasty.Hspec
 import Test.QuickCheck
 import Control.Exception
+import Data.Ratio
 import Raven.Number
 
 
@@ -117,7 +118,7 @@ spec = describe "Numerical tower behavior" $ do
           Integral a * Complex r i `shouldBe` Complex (fromIntegral a * r) (fromIntegral a * i)
           Rational n1 d1 * Integral a `shouldBe` Integral a * Rational n1 d1
           Rational n1 d1 * Rational n2 d2 `shouldBe` Rational (n1 * n2) (d1 * d2)
-          Rational n1 d1 * Real c `shouldBe` Real (c * fromIntegral n1 / fromIntegral d1)
+          Rational n1 d1 * Real c `shouldBe` Real (c * (fromIntegral n1 / fromIntegral d1))
           Rational n1 d1 * Complex r i `shouldBe` Complex ((fromIntegral n1 / fromIntegral d1) * r) ((fromIntegral n1 / fromIntegral d1) * i)
           Real c * Integral a `shouldBe` Integral a * Real c
           Real c * Rational n1 d1 `shouldBe` Rational n1 d1 * Real c
@@ -176,3 +177,39 @@ spec = describe "Numerical tower behavior" $ do
         checkFromInteger 1 (Integral 1)
         checkFromInteger 10 (Integral 10)
         
+    describe "Fractional" $ do
+      it "should be possible to divide 2 numbers" $ property $ do
+        \a b c n1 d1 n2 d2 r i ->
+          a /= 0 && b /= 0 && c/= 0 && n1 /= 0 && d1 /= 0 && n2 /= 0 && d2/= 0 ==> do
+          let a' = fromIntegral a
+          let f = (fromIntegral n1 / fromIntegral d1)
+          Integral a / Integral b `shouldBe` Rational a b
+          Integral a / Rational n1 d1 `shouldBe` Rational (a * d1) n1
+          Integral a / Real c `shouldBe` Real (fromIntegral a / c)
+          Integral a / Complex r i `shouldBe` Complex (fromIntegral a) 0 / Complex r i
+          Rational n1 d1 / Integral a `shouldBe` Rational n1 (a * d1)
+          Rational n1 d1 / Rational n2 d2 `shouldBe` Rational n1 d1 * Rational d2 n2
+          Rational n1 d1 / Real c `shouldBe` Real ((fromIntegral n1 / fromIntegral d1) / c)
+          Rational n1 d1 / Complex r i `shouldBe` Complex (fromIntegral n1 / fromIntegral d1) 0 / Complex r i
+          Real c / Integral a `shouldBe` Real (c / (fromIntegral a))
+          Real c / Rational n1 d1 `shouldBe` Real (c / (fromIntegral n1 / fromIntegral d1))
+          Real c / Real r `shouldBe` Real (c / r)
+          Real c / Complex r i `shouldBe` Complex c 0 / Complex r i
+          Complex r i / Integral a `shouldBe` Complex (r / a') (i / a') 
+          Complex r i / Rational n1 d1 `shouldBe` Complex (r / f) (i / f)
+          Complex r i / Real c `shouldBe` Complex (r / c) (i / c)
+          Complex r i / Complex c c `shouldBe` (Complex r i * Complex c (negate c)) / Real (c * c * 2)
+            
+
+      it "should be possible to calculate the reciprocal" $ property $ do
+        \a b n d r i ->
+          a /= 0 && b /= 0 && n /= 0 && d/= 0 && r /= 0 && i/= 0 ==> do
+          recip (Integral a) `shouldBe` Rational 1 a
+          recip (Rational n d) `shouldBe` Rational d n
+          recip (Real b) `shouldBe` Real (fromIntegral 1 / b)
+          recip (Complex r i) `shouldBe` Complex (fromIntegral 1) 0 / Complex r i
+
+      it "should be possible to convert from a rational number" $ do
+        fromRational (1 % 5) `shouldBe` (Rational 1 5)
+        fromRational (2 % 10) `shouldBe` (Rational 1 5)
+        fromRational (3 % 10) `shouldBe` (Rational 3 10)

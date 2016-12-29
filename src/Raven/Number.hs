@@ -6,20 +6,19 @@ module Raven.Number ( Number(..) ) where
 import Data.Ratio
 type Numerator = Int
 type Denominator = Int
-type RealPart = Double
+type RavenRealPart = Double
 type ImagPart = Double
--- TODO rename to avoid name clashes with builtin haskell types
-data Number = Integral Int
-            | Rational Numerator Denominator  -- Assumes Denominator >= 0 (TODO enforce with type)
-            | Real Double
-            | Complex RealPart ImagPart
+data Number = RavenIntegral Int
+            | RavenRational Numerator Denominator  -- Assumes Denominator >= 0 (TODO enforce with type)
+            | RavenReal Double
+            | RavenComplex RavenRealPart ImagPart
 
 
 instance Show Number where
-  show (Integral a) = show a
-  show (Rational n d) = show n ++ "/" ++ show d
-  show (Real a) = show a
-  show (Complex r i) = stringRepresentation
+  show (RavenIntegral a) = show a
+  show (RavenRational n d) = show n ++ "/" ++ show d
+  show (RavenReal a) = show a
+  show (RavenComplex r i) = stringRepresentation
     where stringRepresentation = realPart ++ imagPart ++ "i"
           realPart = if r == 0 then "" else show r
           imagPart
@@ -29,99 +28,99 @@ instance Show Number where
   
 -- TODO: forbid comparison on Double (with a 'SafeDouble' type)?
 instance Eq Number where
-  Integral a == Integral b = a == b
-  Integral a == Rational n d = a * d == n
-  Integral a == Real b = (fromIntegral a) == b
-  Integral a == Complex r i = i == 0 && (fromIntegral a) == r
-  Rational n1 d1 == Rational n2 d2 = n1 * d2 == n2 * d1
-  Rational n d == Real a = (fromIntegral n / fromIntegral d) == a
-  Rational n d == Complex r i = i == 0 && (fromIntegral n / fromIntegral d) == r
-  Real a == Real b = a == b
-  Real a == Complex r i = i == 0 && a == r
-  Complex r1 i1 == Complex r2 i2 = r1 == r2 && i1 == i2
+  RavenIntegral a == RavenIntegral b = a == b
+  RavenIntegral a == RavenRational n d = a * d == n
+  RavenIntegral a == RavenReal b = (fromIntegral a) == b
+  RavenIntegral a == RavenComplex r i = i == 0 && (fromIntegral a) == r
+  RavenRational n1 d1 == RavenRational n2 d2 = n1 * d2 == n2 * d1
+  RavenRational n d == RavenReal a = (fromIntegral n / fromIntegral d) == a
+  RavenRational n d == RavenComplex r i = i == 0 && (fromIntegral n / fromIntegral d) == r
+  RavenReal a == RavenReal b = a == b
+  RavenReal a == RavenComplex r i = i == 0 && a == r
+  RavenComplex r1 i1 == RavenComplex r2 i2 = r1 == r2 && i1 == i2
   a == b = b == a  -- fallback case, swaps arguments -> ends up in other cases
 
 
 instance Num Number where
-  Integral a + Integral b = Integral $ a + b
-  Integral a + Rational n d = Rational (n + a * d) d  -- TODO simplify fraction?
-  Integral a + Real b = Real $ (fromIntegral a) + b
-  Integral a + Complex r i = Complex ((fromIntegral a) + r) i
-  Rational n1 d1 + Rational n2 d2 = Rational (n1 * d2 + n2 * d1) (d1 * d2)  -- TODO simplify fraction?
-  Rational n d + Real a = Real $ (fromIntegral n / fromIntegral d) + a
-  Rational n d + Complex r i = Complex ((fromIntegral n / fromIntegral d) + r) i
-  Real a + Real b = Real $ a + b
-  Real a + Complex r i = Complex (a + r) i
-  Complex r1 i1 + Complex r2 i2 = Complex (r1 + r2) (i1 + i2)
+  RavenIntegral a + RavenIntegral b = RavenIntegral $ a + b
+  RavenIntegral a + RavenRational n d = RavenRational (n + a * d) d  -- TODO simplify fraction?
+  RavenIntegral a + RavenReal b = RavenReal $ (fromIntegral a) + b
+  RavenIntegral a + RavenComplex r i = RavenComplex ((fromIntegral a) + r) i
+  RavenRational n1 d1 + RavenRational n2 d2 = RavenRational (n1 * d2 + n2 * d1) (d1 * d2)  -- TODO simplify fraction?
+  RavenRational n d + RavenReal a = RavenReal $ (fromIntegral n / fromIntegral d) + a
+  RavenRational n d + RavenComplex r i = RavenComplex ((fromIntegral n / fromIntegral d) + r) i
+  RavenReal a + RavenReal b = RavenReal $ a + b
+  RavenReal a + RavenComplex r i = RavenComplex (a + r) i
+  RavenComplex r1 i1 + RavenComplex r2 i2 = RavenComplex (r1 + r2) (i1 + i2)
   a + b = b + a  -- fallback case, swaps arguments
 
-  Integral a - Integral b = Integral $ a - b
-  Integral a - Rational n d = Rational (a * d - n) d  -- TODO simplify fraction?
-  Integral a - Real b = Real $ (fromIntegral a) - b
-  Integral a - Complex r i = Complex ((fromIntegral a) - r) (negate i)
-  Rational n d - Integral a = Rational (n - a * d) d  -- TODO simplify fraction?
-  Rational n1 d1 - Rational n2 d2 = Rational (n1 * d2 - n2 * d1) (d1 * d2)  -- TODO simplify fraction?
-  Rational n d - Real a = Real $ (fromIntegral n / fromIntegral d) - a
-  Rational n d - Complex r i = Complex ((fromIntegral n / fromIntegral d) - r) (negate i)
-  Real b - Integral a = Real $ b - (fromIntegral a)
-  Real a - Rational n d = Real $ a - (fromIntegral n / fromIntegral d)
-  Real a - Real b = Real $ a - b
-  Real a - Complex r i = Complex (a - r) (negate i)
-  Complex r i - Integral a = Complex (r - (fromIntegral a)) i
-  Complex r i - Rational n d = Complex (r - (fromIntegral n / fromIntegral d)) i
-  Complex r i - Real a = Complex (r - a) i
-  Complex r1 i1 - Complex r2 i2 = Complex (r1 - r2) (i1 - i2)
+  RavenIntegral a - RavenIntegral b = RavenIntegral $ a - b
+  RavenIntegral a - RavenRational n d = RavenRational (a * d - n) d  -- TODO simplify fraction?
+  RavenIntegral a - RavenReal b = RavenReal $ (fromIntegral a) - b
+  RavenIntegral a - RavenComplex r i = RavenComplex ((fromIntegral a) - r) (negate i)
+  RavenRational n d - RavenIntegral a = RavenRational (n - a * d) d  -- TODO simplify fraction?
+  RavenRational n1 d1 - RavenRational n2 d2 = RavenRational (n1 * d2 - n2 * d1) (d1 * d2)  -- TODO simplify fraction?
+  RavenRational n d - RavenReal a = RavenReal $ (fromIntegral n / fromIntegral d) - a
+  RavenRational n d - RavenComplex r i = RavenComplex ((fromIntegral n / fromIntegral d) - r) (negate i)
+  RavenReal b - RavenIntegral a = RavenReal $ b - (fromIntegral a)
+  RavenReal a - RavenRational n d = RavenReal $ a - (fromIntegral n / fromIntegral d)
+  RavenReal a - RavenReal b = RavenReal $ a - b
+  RavenReal a - RavenComplex r i = RavenComplex (a - r) (negate i)
+  RavenComplex r i - RavenIntegral a = RavenComplex (r - (fromIntegral a)) i
+  RavenComplex r i - RavenRational n d = RavenComplex (r - (fromIntegral n / fromIntegral d)) i
+  RavenComplex r i - RavenReal a = RavenComplex (r - a) i
+  RavenComplex r1 i1 - RavenComplex r2 i2 = RavenComplex (r1 - r2) (i1 - i2)
   
-  Integral a * Integral b = Integral $ a * b
-  Integral a * Rational n d = Rational (a * n) d  -- TODO simplify fraction?
-  Integral a * Real b = Real $ (fromIntegral a) * b
-  Integral a * Complex r i = Complex (a' * r) (a' * i) where a' = fromIntegral a
-  Rational n1 d1 * Rational n2 d2 = Rational (n1 * n2) (d1 * d2)  -- TODO simplify fraction?
-  Rational n d * Real a = Real $ a * (fromIntegral n / fromIntegral d)
-  Rational n d * Complex r i = Complex (f * r) (f * i) where f = fromIntegral n / fromIntegral d
-  Real a * Real b = Real $ a * b
-  Real a * Complex r i = Complex (a * r) (a * i)
-  Complex r1 i1 * Complex r2 i2 = Complex (r1 * r2 - i1 * i2) (r1 * i2 + i1 * r2)
+  RavenIntegral a * RavenIntegral b = RavenIntegral $ a * b
+  RavenIntegral a * RavenRational n d = RavenRational (a * n) d  -- TODO simplify fraction?
+  RavenIntegral a * RavenReal b = RavenReal $ (fromIntegral a) * b
+  RavenIntegral a * RavenComplex r i = RavenComplex (a' * r) (a' * i) where a' = fromIntegral a
+  RavenRational n1 d1 * RavenRational n2 d2 = RavenRational (n1 * n2) (d1 * d2)  -- TODO simplify fraction?
+  RavenRational n d * RavenReal a = RavenReal $ a * (fromIntegral n / fromIntegral d)
+  RavenRational n d * RavenComplex r i = RavenComplex (f * r) (f * i) where f = fromIntegral n / fromIntegral d
+  RavenReal a * RavenReal b = RavenReal $ a * b
+  RavenReal a * RavenComplex r i = RavenComplex (a * r) (a * i)
+  RavenComplex r1 i1 * RavenComplex r2 i2 = RavenComplex (r1 * r2 - i1 * i2) (r1 * i2 + i1 * r2)
   a * b = b * a  -- fallback case, swaps arguments
 
-  abs (Integral a) = Integral $ abs a
-  abs (Rational n d) = Rational (abs n) d
-  abs (Real a) = Real $ abs a
-  abs (Complex _ _) = error "abs not supported for complex numbers!"
+  abs (RavenIntegral a) = RavenIntegral $ abs a
+  abs (RavenRational n d) = RavenRational (abs n) d
+  abs (RavenReal a) = RavenReal $ abs a
+  abs (RavenComplex _ _) = error "abs not supported for complex numbers!"
 
-  signum (Integral a) = Integral $ signum a
-  signum (Rational n _) = Integral $ signum n
-  signum (Real a) = Integral $ round $ signum a
-  signum (Complex _ _) = error "signum not supported for complex numbers!"
+  signum (RavenIntegral a) = RavenIntegral $ signum a
+  signum (RavenRational n _) = RavenIntegral $ signum n
+  signum (RavenReal a) = RavenIntegral $ round $ signum a
+  signum (RavenComplex _ _) = error "signum not supported for complex numbers!"
 
-  fromInteger = Integral . fromInteger
+  fromInteger = RavenIntegral . fromInteger
 
 
 instance Fractional Number where
-  Integral a / Integral b = Rational a b  -- TODO simplify fraction?
-  Integral a / Rational n d = Rational (a * d) n  -- TODO simplify fraction?
-  Integral a / Real b = Real $ (fromIntegral a) / b
-  Integral a / Complex r i = Complex (fromIntegral a) 0 / Complex r i
-  Rational n d / Integral a = Rational n (a * d)  -- TODO simplify fraction?
-  Rational n1 d1 / Rational n2 d2 = Rational n1 d1 * Rational d2 n2  -- TODO simplify fraction?
-  Rational n d / Real a = Real $ (fromIntegral n / fromIntegral d) / a
-  Rational n d / Complex r i = Complex (fromIntegral n / fromIntegral d) 0 / Complex r i
-  Real b / Integral a = Real $ b / (fromIntegral a)
-  Real a / Rational n d = Real $ a / (fromIntegral n / fromIntegral d)
-  Real a / Real b = Real $ a / b
-  Real a / Complex r i = Complex a 0 / Complex r i
-  Complex r i / Integral a = Complex (r / a') (i / a') where a' = fromIntegral a
-  Complex r i / Rational n d = Complex (r / f) (i / f) where f = fromIntegral n / fromIntegral d
-  Complex r i / Real a = Complex (r / a) (i / a)
-  Complex r1 i1 / Complex r2 i2 = nominator / denominator
-    where nominator = Complex r1 i1 * Complex r2 i2'
-          denominator = Real $ (r2 * r2) + (i2' * i2')
+  RavenIntegral a / RavenIntegral b = RavenRational a b  -- TODO simplify fraction?
+  RavenIntegral a / RavenRational n d = RavenRational (a * d) n  -- TODO simplify fraction?
+  RavenIntegral a / RavenReal b = RavenReal $ (fromIntegral a) / b
+  RavenIntegral a / RavenComplex r i = RavenComplex (fromIntegral a) 0 / RavenComplex r i
+  RavenRational n d / RavenIntegral a = RavenRational n (a * d)  -- TODO simplify fraction?
+  RavenRational n1 d1 / RavenRational n2 d2 = RavenRational n1 d1 * RavenRational d2 n2  -- TODO simplify fraction?
+  RavenRational n d / RavenReal a = RavenReal $ (fromIntegral n / fromIntegral d) / a
+  RavenRational n d / RavenComplex r i = RavenComplex (fromIntegral n / fromIntegral d) 0 / RavenComplex r i
+  RavenReal b / RavenIntegral a = RavenReal $ b / (fromIntegral a)
+  RavenReal a / RavenRational n d = RavenReal $ a / (fromIntegral n / fromIntegral d)
+  RavenReal a / RavenReal b = RavenReal $ a / b
+  RavenReal a / RavenComplex r i = RavenComplex a 0 / RavenComplex r i
+  RavenComplex r i / RavenIntegral a = RavenComplex (r / a') (i / a') where a' = fromIntegral a
+  RavenComplex r i / RavenRational n d = RavenComplex (r / f) (i / f) where f = fromIntegral n / fromIntegral d
+  RavenComplex r i / RavenReal a = RavenComplex (r / a) (i / a)
+  RavenComplex r1 i1 / RavenComplex r2 i2 = nominator / denominator
+    where nominator = RavenComplex r1 i1 * RavenComplex r2 i2'
+          denominator = RavenReal $ (r2 * r2) + (i2' * i2')
           i2' = negate i2
 
-  recip (Rational n d) = Rational d n
-  recip a = (Integral 1) / a
+  recip (RavenRational n d) = RavenRational d n
+  recip a = (RavenIntegral 1) / a
 
-  fromRational a = Rational n d
+  fromRational a = RavenRational n d
     where n = fromInteger $ numerator a
           d = fromInteger $ denominator a
 

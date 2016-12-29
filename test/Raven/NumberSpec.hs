@@ -12,45 +12,45 @@ spec :: Spec
 spec = describe "Numerical tower behavior" $ do
     describe "Eq" $ do
       it "should be possible to compare various numbers with each other" $ do
-        Integral 1 == Integral 1 `shouldBe` True
-        Integral 1 == Integral 2 `shouldBe` False
-        Integral 1 == Rational 10 10 `shouldBe` True
-        Integral 1 == Rational 10 11 `shouldBe` False
-        Rational 10 10 == Integral 1 `shouldBe` True
-        Rational 10 11 == Integral 1 `shouldBe` False
-        Integral 1 == Real 1 `shouldBe` True
-        Integral 1 == Real 1.1 `shouldBe` False
-        Real 1 == Integral 1 `shouldBe` True
-        Real 1.1 == Integral 1 `shouldBe` False
-        Integral 1 == Complex 1 0 `shouldBe` True
-        Integral 1 == Complex 1 1 `shouldBe` False
-        Complex 1 0 == Integral 1 `shouldBe` True
-        Complex 1 1 == Integral 1 `shouldBe` False
-        Rational 1 1 == Rational 1 1 `shouldBe` True
-        Rational 1 1 == Rational 2 2 `shouldBe` True
-        Rational 1 3 == Rational 2 6 `shouldBe` True
-        Rational 1 1 == Rational 1 2 `shouldBe` False
-        Rational 1 1 == Real 1 `shouldBe` True
-        Rational 1 1 == Real 1.1 `shouldBe` False
-        Real 1 == Rational 1 1 `shouldBe` True
-        Real 1.1 == Rational 1 1 `shouldBe` False
-        Rational 1 1 == Complex 1 0 `shouldBe` True
-        Rational 1 1 == Complex 1 1 `shouldBe` False
-        Real 1.1 == Real 1.1 `shouldBe` True
-        Real 1.1 == Real 1.2 `shouldBe` False
-        Real 1.1 == Complex 1.1 0 `shouldBe` True
-        Real 1.1 == Complex 1.1 1 `shouldBe` False
-        Complex 1.1 0 == Real 1.1 `shouldBe` True
-        Complex 1.1 1 == Real 1.1 `shouldBe` False
-        Complex 1 1 == Complex 1 1 `shouldBe` True
-        Complex 1 1 == Complex 1 2 `shouldBe` False
+        RavenIntegral 1 == RavenIntegral 1 `shouldBe` True
+        RavenIntegral 1 == RavenIntegral 2 `shouldBe` False
+        RavenIntegral 1 == RavenRational 10 10 `shouldBe` True
+        RavenIntegral 1 == RavenRational 10 11 `shouldBe` False
+        RavenRational 10 10 == RavenIntegral 1 `shouldBe` True
+        RavenRational 10 11 == RavenIntegral 1 `shouldBe` False
+        RavenIntegral 1 == RavenReal 1 `shouldBe` True
+        RavenIntegral 1 == RavenReal 1.1 `shouldBe` False
+        RavenReal 1 == RavenIntegral 1 `shouldBe` True
+        RavenReal 1.1 == RavenIntegral 1 `shouldBe` False
+        RavenIntegral 1 == RavenComplex 1 0 `shouldBe` True
+        RavenIntegral 1 == RavenComplex 1 1 `shouldBe` False
+        RavenComplex 1 0 == RavenIntegral 1 `shouldBe` True
+        RavenComplex 1 1 == RavenIntegral 1 `shouldBe` False
+        RavenRational 1 1 == RavenRational 1 1 `shouldBe` True
+        RavenRational 1 1 == RavenRational 2 2 `shouldBe` True
+        RavenRational 1 3 == RavenRational 2 6 `shouldBe` True
+        RavenRational 1 1 == RavenRational 1 2 `shouldBe` False
+        RavenRational 1 1 == RavenReal 1 `shouldBe` True
+        RavenRational 1 1 == RavenReal 1.1 `shouldBe` False
+        RavenReal 1 == RavenRational 1 1 `shouldBe` True
+        RavenReal 1.1 == RavenRational 1 1 `shouldBe` False
+        RavenRational 1 1 == RavenComplex 1 0 `shouldBe` True
+        RavenRational 1 1 == RavenComplex 1 1 `shouldBe` False
+        RavenReal 1.1 == RavenReal 1.1 `shouldBe` True
+        RavenReal 1.1 == RavenReal 1.2 `shouldBe` False
+        RavenReal 1.1 == RavenComplex 1.1 0 `shouldBe` True
+        RavenReal 1.1 == RavenComplex 1.1 1 `shouldBe` False
+        RavenComplex 1.1 0 == RavenReal 1.1 `shouldBe` True
+        RavenComplex 1.1 1 == RavenReal 1.1 `shouldBe` False
+        RavenComplex 1 1 == RavenComplex 1 1 `shouldBe` True
+        RavenComplex 1 1 == RavenComplex 1 2 `shouldBe` False
 
     describe "Show" $ do
       it "should be possible to display the various numbers as human readable text" $ do
-        let checkIntShow a b = show (Integral a) `shouldBe` b
-        let checkRatShow a b c = show (Rational a b) `shouldBe` c
-        let checkRealShow a b = show (Real a) `shouldBe` b
-        let checkComplexShow a b c = show (Complex a b) `shouldBe` c
+        let checkIntShow a b = show (RavenIntegral a) `shouldBe` b
+        let checkRatShow a b c = show (RavenRational a b) `shouldBe` c
+        let checkRealShow a b = show (RavenReal a) `shouldBe` b
+        let checkComplexShow a b c = show (RavenComplex a b) `shouldBe` c
         checkIntShow 1 "1"
         checkIntShow 2 "2"
         checkIntShow 10 "10"
@@ -74,65 +74,65 @@ spec = describe "Numerical tower behavior" $ do
     describe "Num" $ do
       it "should be possible to perform addition with numbers" $ property $ do
         \a b c n1 d1 n2 d2 r i -> d2 /= 0 && d1 /= 0 ==> do
-          Integral a + Integral b `shouldBe` Integral (a + b)
-          Integral a + Rational n1 d1 `shouldBe` Rational (a * d1) d1 + Rational n1 d1
-          Integral a + Real c `shouldBe` Real (fromIntegral a + c)
-          Integral a + Complex r i `shouldBe` Complex (fromIntegral a + r) i
-          Rational n1 d1 + Integral a `shouldBe` Integral a + Rational n1 d1
-          Rational n1 d1 + Rational n2 d2 `shouldBe` Rational (n1 * d2 + n2 * d1) (d1 * d2)
-          Rational n1 d1 + Real c `shouldBe` Real ((fromIntegral n1 / fromIntegral d1) + c)
-          Rational n1 d1 + Complex r i `shouldBe` Complex (r + (fromIntegral n1 / fromIntegral d1)) i
-          Real c + Integral a `shouldBe` Integral a + Real c
-          Real c + Rational n1 d1 `shouldBe` Rational n1 d1 + Real c
-          Real c + Real r `shouldBe` Real (c + r)
-          Real c + Complex r i `shouldBe` Complex (c + r) i
-          Complex r i + Integral a `shouldBe` Integral a + Complex r i
-          Complex r i + Rational n1 d1 `shouldBe` Rational n1 d1 + Complex r i
-          Complex r i + Real c `shouldBe` Real c + Complex r i
-          Complex r i + Complex c c `shouldBe` Complex (r + c) (i + c)
+          RavenIntegral a + RavenIntegral b `shouldBe` RavenIntegral (a + b)
+          RavenIntegral a + RavenRational n1 d1 `shouldBe` RavenRational (a * d1) d1 + RavenRational n1 d1
+          RavenIntegral a + RavenReal c `shouldBe` RavenReal (fromIntegral a + c)
+          RavenIntegral a + RavenComplex r i `shouldBe` RavenComplex (fromIntegral a + r) i
+          RavenRational n1 d1 + RavenIntegral a `shouldBe` RavenIntegral a + RavenRational n1 d1
+          RavenRational n1 d1 + RavenRational n2 d2 `shouldBe` RavenRational (n1 * d2 + n2 * d1) (d1 * d2)
+          RavenRational n1 d1 + RavenReal c `shouldBe` RavenReal ((fromIntegral n1 / fromIntegral d1) + c)
+          RavenRational n1 d1 + RavenComplex r i `shouldBe` RavenComplex (r + (fromIntegral n1 / fromIntegral d1)) i
+          RavenReal c + RavenIntegral a `shouldBe` RavenIntegral a + RavenReal c
+          RavenReal c + RavenRational n1 d1 `shouldBe` RavenRational n1 d1 + RavenReal c
+          RavenReal c + RavenReal r `shouldBe` RavenReal (c + r)
+          RavenReal c + RavenComplex r i `shouldBe` RavenComplex (c + r) i
+          RavenComplex r i + RavenIntegral a `shouldBe` RavenIntegral a + RavenComplex r i
+          RavenComplex r i + RavenRational n1 d1 `shouldBe` RavenRational n1 d1 + RavenComplex r i
+          RavenComplex r i + RavenReal c `shouldBe` RavenReal c + RavenComplex r i
+          RavenComplex r i + RavenComplex c c `shouldBe` RavenComplex (r + c) (i + c)
 
       it "should be possible to perform substraction with numbers" $ property $ do
         \a b c n1 d1 n2 d2 r i -> d2 /= 0 && d1 /= 0 ==> do
-          Integral a - Integral b `shouldBe` Integral (a - b)
-          Integral a - Rational n1 d1 `shouldBe` Rational (a * d1) d1 - Rational n1 d1
-          Integral a - Real c `shouldBe` Real (fromIntegral a - c)
-          Integral a - Complex r i `shouldBe` Complex (fromIntegral a - r) (negate i)
-          Rational n1 d1 - Integral a `shouldBe` Rational (n1 - a * d1) d1
-          Rational n1 d1 - Rational n2 d2 `shouldBe` Rational (n1 * d2 - n2 * d1) (d1 * d2)
-          Rational n1 d1 - Real c `shouldBe` Real ((fromIntegral n1 / fromIntegral d1) - c)
-          Rational n1 d1 - Complex r i `shouldBe` Complex ((fromIntegral n1 / fromIntegral d1) - r) (negate i)
-          Real c - Integral a `shouldBe` Real (c - fromIntegral a)
-          Real c - Rational n1 d1 `shouldBe` Real (c - (fromIntegral n1 / fromIntegral d1))
-          Real c - Real r `shouldBe` Real (c - r)
-          Real c - Complex r i `shouldBe` Complex (c - r) (negate i)
-          Complex r i - Integral a `shouldBe` Complex (r - fromIntegral a) i
-          Complex r i - Rational n1 d1 `shouldBe` Complex (r - fromIntegral n1 / fromIntegral d1) i
-          Complex r i - Real c `shouldBe` Complex (r - c) i
-          Complex r i - Complex c c `shouldBe` Complex (r - c) (i - c)
+          RavenIntegral a - RavenIntegral b `shouldBe` RavenIntegral (a - b)
+          RavenIntegral a - RavenRational n1 d1 `shouldBe` RavenRational (a * d1) d1 - RavenRational n1 d1
+          RavenIntegral a - RavenReal c `shouldBe` RavenReal (fromIntegral a - c)
+          RavenIntegral a - RavenComplex r i `shouldBe` RavenComplex (fromIntegral a - r) (negate i)
+          RavenRational n1 d1 - RavenIntegral a `shouldBe` RavenRational (n1 - a * d1) d1
+          RavenRational n1 d1 - RavenRational n2 d2 `shouldBe` RavenRational (n1 * d2 - n2 * d1) (d1 * d2)
+          RavenRational n1 d1 - RavenReal c `shouldBe` RavenReal ((fromIntegral n1 / fromIntegral d1) - c)
+          RavenRational n1 d1 - RavenComplex r i `shouldBe` RavenComplex ((fromIntegral n1 / fromIntegral d1) - r) (negate i)
+          RavenReal c - RavenIntegral a `shouldBe` RavenReal (c - fromIntegral a)
+          RavenReal c - RavenRational n1 d1 `shouldBe` RavenReal (c - (fromIntegral n1 / fromIntegral d1))
+          RavenReal c - RavenReal r `shouldBe` RavenReal (c - r)
+          RavenReal c - RavenComplex r i `shouldBe` RavenComplex (c - r) (negate i)
+          RavenComplex r i - RavenIntegral a `shouldBe` RavenComplex (r - fromIntegral a) i
+          RavenComplex r i - RavenRational n1 d1 `shouldBe` RavenComplex (r - fromIntegral n1 / fromIntegral d1) i
+          RavenComplex r i - RavenReal c `shouldBe` RavenComplex (r - c) i
+          RavenComplex r i - RavenComplex c c `shouldBe` RavenComplex (r - c) (i - c)
 
       it "should be possible to perform multiplication with numbers" $ property $ do
         \a b c n1 d1 n2 d2 r i -> d2 /= 0 && d1 /= 0 ==> do
-          Integral a * Integral b `shouldBe` Integral (a * b)
-          Integral a * Rational n1 d1 `shouldBe` Rational (a * d1) d1 * Rational n1 d1
-          Integral a * Real c `shouldBe` Real ((fromIntegral a) * c)
-          Integral a * Complex r i `shouldBe` Complex (fromIntegral a * r) (fromIntegral a * i)
-          Rational n1 d1 * Integral a `shouldBe` Integral a * Rational n1 d1
-          Rational n1 d1 * Rational n2 d2 `shouldBe` Rational (n1 * n2) (d1 * d2)
-          Rational n1 d1 * Real c `shouldBe` Real (c * (fromIntegral n1 / fromIntegral d1))
-          Rational n1 d1 * Complex r i `shouldBe` Complex ((fromIntegral n1 / fromIntegral d1) * r) ((fromIntegral n1 / fromIntegral d1) * i)
-          Real c * Integral a `shouldBe` Integral a * Real c
-          Real c * Rational n1 d1 `shouldBe` Rational n1 d1 * Real c
-          Real c * Real r `shouldBe` Real (c * r)
-          Real c * Complex r i `shouldBe` Complex (c * r) (c * i)
-          Complex r i * Integral a `shouldBe` Integral a * Complex r i
-          Complex r i * Rational n1 d1 `shouldBe` Rational n1 d1 * Complex r i
-          Complex r i * Real c `shouldBe` Real c * Complex r i
-          Complex r i * Complex c c `shouldBe` Complex (r * c - i * c) (r * c + i * c)
+          RavenIntegral a * RavenIntegral b `shouldBe` RavenIntegral (a * b)
+          RavenIntegral a * RavenRational n1 d1 `shouldBe` RavenRational (a * d1) d1 * RavenRational n1 d1
+          RavenIntegral a * RavenReal c `shouldBe` RavenReal ((fromIntegral a) * c)
+          RavenIntegral a * RavenComplex r i `shouldBe` RavenComplex (fromIntegral a * r) (fromIntegral a * i)
+          RavenRational n1 d1 * RavenIntegral a `shouldBe` RavenIntegral a * RavenRational n1 d1
+          RavenRational n1 d1 * RavenRational n2 d2 `shouldBe` RavenRational (n1 * n2) (d1 * d2)
+          RavenRational n1 d1 * RavenReal c `shouldBe` RavenReal (c * (fromIntegral n1 / fromIntegral d1))
+          RavenRational n1 d1 * RavenComplex r i `shouldBe` RavenComplex ((fromIntegral n1 / fromIntegral d1) * r) ((fromIntegral n1 / fromIntegral d1) * i)
+          RavenReal c * RavenIntegral a `shouldBe` RavenIntegral a * RavenReal c
+          RavenReal c * RavenRational n1 d1 `shouldBe` RavenRational n1 d1 * RavenReal c
+          RavenReal c * RavenReal r `shouldBe` RavenReal (c * r)
+          RavenReal c * RavenComplex r i `shouldBe` RavenComplex (c * r) (c * i)
+          RavenComplex r i * RavenIntegral a `shouldBe` RavenIntegral a * RavenComplex r i
+          RavenComplex r i * RavenRational n1 d1 `shouldBe` RavenRational n1 d1 * RavenComplex r i
+          RavenComplex r i * RavenReal c `shouldBe` RavenReal c * RavenComplex r i
+          RavenComplex r i * RavenComplex c c `shouldBe` RavenComplex (r * c - i * c) (r * c + i * c)
 
       it "should be possible to calculate abs value for a number (except complex numbers)" $ do
-        let checkIntAbs a b = abs (Integral a) `shouldBe` (Integral b)
-        let checkRatAbs a b = abs (Rational a 1) `shouldBe` (Rational b 1)
-        let checkRealAbs a b = abs (Real a) `shouldBe` (Real b)
+        let checkIntAbs a b = abs (RavenIntegral a) `shouldBe` (RavenIntegral b)
+        let checkRatAbs a b = abs (RavenRational a 1) `shouldBe` (RavenRational b 1)
+        let checkRealAbs a b = abs (RavenReal a) `shouldBe` (RavenReal b)
         checkIntAbs 0 0
         checkIntAbs (negate 2) 2
         checkIntAbs 2 2
@@ -144,16 +144,16 @@ spec = describe "Numerical tower behavior" $ do
         checkRealAbs 2 2
         
       it "raises an error if calculating abs for a complex number" $ do
-        let checkAbs a b = evaluate (abs (Complex a b)) `shouldThrow` anyException
+        let checkAbs a b = evaluate (abs (RavenComplex a b)) `shouldThrow` anyException
         checkAbs 0 0
         checkAbs 0 1
         checkAbs 1 0
         checkAbs 1 1
 
       it "should be possible to get the sign of a number (except complex numbers)" $ do
-        let checkIntSign a b = signum (Integral a) `shouldBe` (Integral b)
-        let checkRatSign a b = signum (Rational a 1) `shouldBe` (Integral b)
-        let checkRealSign a b = signum (Real a) `shouldBe` (Integral b)
+        let checkIntSign a b = signum (RavenIntegral a) `shouldBe` (RavenIntegral b)
+        let checkRatSign a b = signum (RavenRational a 1) `shouldBe` (RavenIntegral b)
+        let checkRealSign a b = signum (RavenReal a) `shouldBe` (RavenIntegral b)
         checkIntSign 0 0
         checkIntSign (negate 2) (negate 1)
         checkIntSign 2 1
@@ -165,7 +165,7 @@ spec = describe "Numerical tower behavior" $ do
         checkRealSign 2 1
 
       it "raises an error if calculating the sign for a complex number" $ do
-        let checkSign a b = evaluate (signum (Complex a b)) `shouldThrow` anyException
+        let checkSign a b = evaluate (signum (RavenComplex a b)) `shouldThrow` anyException
         checkSign 0 0
         checkSign 0 1
         checkSign 1 0
@@ -173,9 +173,9 @@ spec = describe "Numerical tower behavior" $ do
         
       it "should be possible to convert an Integer to a Number" $ do
         let checkFromInteger a b = ((fromInteger a) :: Number) `shouldBe` b
-        checkFromInteger 0 (Integral 0)
-        checkFromInteger 1 (Integral 1)
-        checkFromInteger 10 (Integral 10)
+        checkFromInteger 0 (RavenIntegral 0)
+        checkFromInteger 1 (RavenIntegral 1)
+        checkFromInteger 10 (RavenIntegral 10)
         
     describe "Fractional" $ do
       it "should be possible to divide 2 numbers" $ property $ do
@@ -183,33 +183,33 @@ spec = describe "Numerical tower behavior" $ do
           a /= 0 && b /= 0 && c/= 0 && n1 /= 0 && d1 /= 0 && n2 /= 0 && d2/= 0 ==> do
           let a' = fromIntegral a
           let f = (fromIntegral n1 / fromIntegral d1)
-          Integral a / Integral b `shouldBe` Rational a b
-          Integral a / Rational n1 d1 `shouldBe` Rational (a * d1) n1
-          Integral a / Real c `shouldBe` Real (fromIntegral a / c)
-          Integral a / Complex r i `shouldBe` Complex (fromIntegral a) 0 / Complex r i
-          Rational n1 d1 / Integral a `shouldBe` Rational n1 (a * d1)
-          Rational n1 d1 / Rational n2 d2 `shouldBe` Rational n1 d1 * Rational d2 n2
-          Rational n1 d1 / Real c `shouldBe` Real ((fromIntegral n1 / fromIntegral d1) / c)
-          Rational n1 d1 / Complex r i `shouldBe` Complex (fromIntegral n1 / fromIntegral d1) 0 / Complex r i
-          Real c / Integral a `shouldBe` Real (c / (fromIntegral a))
-          Real c / Rational n1 d1 `shouldBe` Real (c / (fromIntegral n1 / fromIntegral d1))
-          Real c / Real r `shouldBe` Real (c / r)
-          Real c / Complex r i `shouldBe` Complex c 0 / Complex r i
-          Complex r i / Integral a `shouldBe` Complex (r / a') (i / a') 
-          Complex r i / Rational n1 d1 `shouldBe` Complex (r / f) (i / f)
-          Complex r i / Real c `shouldBe` Complex (r / c) (i / c)
-          Complex r i / Complex c c `shouldBe` (Complex r i * Complex c (negate c)) / Real (c * c * 2)
+          RavenIntegral a / RavenIntegral b `shouldBe` RavenRational a b
+          RavenIntegral a / RavenRational n1 d1 `shouldBe` RavenRational (a * d1) n1
+          RavenIntegral a / RavenReal c `shouldBe` RavenReal (fromIntegral a / c)
+          RavenIntegral a / RavenComplex r i `shouldBe` RavenComplex (fromIntegral a) 0 / RavenComplex r i
+          RavenRational n1 d1 / RavenIntegral a `shouldBe` RavenRational n1 (a * d1)
+          RavenRational n1 d1 / RavenRational n2 d2 `shouldBe` RavenRational n1 d1 * RavenRational d2 n2
+          RavenRational n1 d1 / RavenReal c `shouldBe` RavenReal ((fromIntegral n1 / fromIntegral d1) / c)
+          RavenRational n1 d1 / RavenComplex r i `shouldBe` RavenComplex (fromIntegral n1 / fromIntegral d1) 0 / RavenComplex r i
+          RavenReal c / RavenIntegral a `shouldBe` RavenReal (c / (fromIntegral a))
+          RavenReal c / RavenRational n1 d1 `shouldBe` RavenReal (c / (fromIntegral n1 / fromIntegral d1))
+          RavenReal c / RavenReal r `shouldBe` RavenReal (c / r)
+          RavenReal c / RavenComplex r i `shouldBe` RavenComplex c 0 / RavenComplex r i
+          RavenComplex r i / RavenIntegral a `shouldBe` RavenComplex (r / a') (i / a') 
+          RavenComplex r i / RavenRational n1 d1 `shouldBe` RavenComplex (r / f) (i / f)
+          RavenComplex r i / RavenReal c `shouldBe` RavenComplex (r / c) (i / c)
+          RavenComplex r i / RavenComplex c c `shouldBe` (RavenComplex r i * RavenComplex c (negate c)) / RavenReal (c * c * 2)
             
 
       it "should be possible to calculate the reciprocal" $ property $ do
         \a b n d r i ->
           a /= 0 && b /= 0 && n /= 0 && d/= 0 && r /= 0 && i/= 0 ==> do
-          recip (Integral a) `shouldBe` Rational 1 a
-          recip (Rational n d) `shouldBe` Rational d n
-          recip (Real b) `shouldBe` Real (fromIntegral 1 / b)
-          recip (Complex r i) `shouldBe` Complex (fromIntegral 1) 0 / Complex r i
+          recip (RavenIntegral a) `shouldBe` RavenRational 1 a
+          recip (RavenRational n d) `shouldBe` RavenRational d n
+          recip (RavenReal b) `shouldBe` RavenReal (fromIntegral 1 / b)
+          recip (RavenComplex r i) `shouldBe` RavenComplex (fromIntegral 1) 0 / RavenComplex r i
 
       it "should be possible to convert from a rational number" $ do
-        fromRational (1 % 5) `shouldBe` (Rational 1 5)
-        fromRational (2 % 10) `shouldBe` (Rational 1 5)
-        fromRational (3 % 10) `shouldBe` (Rational 3 10)
+        fromRational (1 % 5) `shouldBe` (RavenRational 1 5)
+        fromRational (2 % 10) `shouldBe` (RavenRational 1 5)
+        fromRational (3 % 10) `shouldBe` (RavenRational 3 10)

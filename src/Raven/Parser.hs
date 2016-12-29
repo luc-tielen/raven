@@ -46,7 +46,7 @@ symbol = RavenSymbol <$> symbolParser
         symbolChars = alphaNumChar <|> oneOf "+-.*/<=>!?$%_&^,~"
 
 integral :: Parser Expression
-integral = RavenNumber . Integral <$> do
+integral = RavenNumber . RavenIntegral <$> do
   firstPart <- stringS "0x" <|> stringS "0b" <|> some digitChar
   case firstPart of
     "0x" -> do
@@ -62,10 +62,10 @@ rational = RavenNumber <$> do
   nominator <- some digitChar
   char '/'
   denominator <- some digitChar
-  return $ Rational (read nominator) (read denominator)
+  return $ RavenRational (read nominator) (read denominator)
 
 real :: Parser Expression
-real = RavenNumber . Real <$> float
+real = RavenNumber . RavenReal <$> float
 
 complex :: Parser Expression
 complex = RavenNumber <$> do
@@ -73,8 +73,8 @@ complex = RavenNumber <$> do
   maybeSecondPart <- optional $ signedFloatNoScientific <||> signedInteger
   char 'i'
   case maybeSecondPart of
-    Just secondPart -> return $ Complex firstPart secondPart
-    Nothing -> return $ Complex 0 firstPart
+    Just secondPart -> return $ RavenComplex firstPart secondPart
+    Nothing -> return $ RavenComplex 0 firstPart
   where signedFloatNoScientific = signed (return ()) floatNoScientific
         floatNoScientific = do
           val1 <- some digitChar

@@ -78,7 +78,7 @@ spec = describe "Parser" $ do
 
     describe "parsing numbers" $ do
       it "should be able to parse (positive) decimal numbers" $ do
-        let checkInt a b = parse number a `shouldParse` RavenNumber (Integral b)
+        let checkInt a b = parse number a `shouldParse` RavenNumber (RavenIntegral b)
         checkInt "0" 0
         checkInt "1" 1
         checkInt "2" 2
@@ -92,7 +92,7 @@ spec = describe "Parser" $ do
         checkFailInt "a1"
 
       it "should be able to parse hexadecimal numbers" $ do
-        let checkHex a b = parse number a `shouldParse` RavenNumber (Integral b)
+        let checkHex a b = parse number a `shouldParse` RavenNumber (RavenIntegral b)
         checkHex "0x0" 0
         checkHex "0x1" 1
         checkHex "0x2" 2
@@ -112,7 +112,7 @@ spec = describe "Parser" $ do
         --checkFailHex "0x0.1"
         
       it "should be able to parse binary numbers" $ do
-        let checkBin a b = parse number a `shouldParse` RavenNumber (Integral b)
+        let checkBin a b = parse number a `shouldParse` RavenNumber (RavenIntegral b)
         checkBin "0b0" 0
         checkBin "0b1" 1
         checkBin "0b01" 1
@@ -129,7 +129,7 @@ spec = describe "Parser" $ do
         --checkFailBin "0b1.0"
 
       it "should be able to parse rational numbers" $ do
-        let checkRat a b c = parse number a `shouldParse` RavenNumber (Rational b c)
+        let checkRat a b c = parse number a `shouldParse` RavenNumber (RavenRational b c)
         checkRat "0/1" 0 1
         checkRat "1/1" 1 1
         checkRat "1/2" 1 2
@@ -144,7 +144,7 @@ spec = describe "Parser" $ do
         --checkFailRat "1 /1"
 
       it "should be able to parse real (floating point) numbers" $ do
-        let checkDouble a b = parse number a `shouldParse` RavenNumber (Real b)
+        let checkDouble a b = parse number a `shouldParse` RavenNumber (RavenReal b)
         checkDouble "0.0" 0.0
         checkDouble "0.1" 0.1
         checkDouble "1.1" 1.1
@@ -160,7 +160,7 @@ spec = describe "Parser" $ do
         checkFailDouble "-1e3"
   
       it "should be able to parse complex numbers" $ do
-        let checkComplex a b c = parse number a `shouldParse` RavenNumber (Complex b c)
+        let checkComplex a b c = parse number a `shouldParse` RavenNumber (RavenComplex b c)
         let checkComplexI a b = checkComplex a 0 b
         checkComplexI "0i" 0
         checkComplexI "0.1i" 0.1

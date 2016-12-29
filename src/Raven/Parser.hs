@@ -24,29 +24,29 @@ import Raven.Types
 parse :: Parsec e s a -> s -> Either (ParseError (Token s) e) a
 parse parser stream = Text.Megaparsec.parse parser "" stream
 
-bool :: Parser Expr
-bool = trueExpr <|> falseExpr
-  where trueExpr = (stringS "true") >> return (RBool True)
-        falseExpr = (stringS "false") >> return (RBool False)
+bool :: Parser Expression
+bool = trueExpression <|> falseExpression
+  where trueExpression = (stringS "true") >> return (RavenBool True)
+        falseExpression = (stringS "false") >> return (RavenBool False)
 
-string :: Parser Expr
-string = RString <$> between doubleQuote doubleQuote stringCharacters
+string :: Parser Expression
+string = RavenString <$> between doubleQuote doubleQuote stringCharacters
   where doubleQuote = char '\"'
         stringCharacters = many $ noneOf "\"" 
 
-comment :: Parser Expr
-comment = RComment <$> (stringS ";;" >> (many $ noneOf "\n"))
+comment :: Parser Expression
+comment = RavenComment <$> (stringS ";;" >> (many $ noneOf "\n"))
 
-symbol :: Parser Expr
-symbol = RSymbol <$> symbolParser
+symbol :: Parser Expression
+symbol = RavenSymbol <$> symbolParser
   where symbolParser = do
           firstChar <- letterChar
           restChars <- many symbolChars
           return $ firstChar : restChars
         symbolChars = alphaNumChar <|> oneOf "+-.*/<=>!?$%_&^,~"
 
-integral :: Parser Expr
-integral = RNumber . Integral <$> do
+integral :: Parser Expression
+integral = RavenNumber . Integral <$> do
   firstPart <- stringS "0x" <|> stringS "0b" <|> some digitChar
   case firstPart of
     "0x" -> do
@@ -57,18 +57,18 @@ integral = RNumber . Integral <$> do
       return $ bin2dec binDigits
     digits -> return $ read digits
 
-rational :: Parser Expr
-rational = RNumber <$> do
+rational :: Parser Expression
+rational = RavenNumber <$> do
   nominator <- some digitChar
   char '/'
   denominator <- some digitChar
   return $ Rational (read nominator) (read denominator)
 
-real :: Parser Expr
-real = RNumber . Real <$> float
+real :: Parser Expression
+real = RavenNumber . Real <$> float
 
-complex :: Parser Expr
-complex = RNumber <$> do
+complex :: Parser Expression
+complex = RavenNumber <$> do
   firstPart <- signedFloatNoScientific <||> signedInteger
   maybeSecondPart <- optional $ signedFloatNoScientific <||> signedInteger
   char 'i'
@@ -85,7 +85,7 @@ complex = RNumber <$> do
           return $ units + fractions
         signedInteger = fromIntegral <$> (signed (return ()) integer)
 
-number :: Parser Expr
+number :: Parser Expression
 number = complex
       <||> real
       <||> rational

@@ -13,8 +13,8 @@ spec :: Spec
 spec = describe "Parser" $ do
     describe "parsing bools" $ do
       it "should be able to parse true and false" $ do
-        parse bool "true" `shouldParse` RBool True
-        parse bool "false" `shouldParse` RBool False
+        parse bool "true" `shouldParse` RavenBool True
+        parse bool "false" `shouldParse` RavenBool False
 
       it "should fail to parse invalid input" $ do
         parse bool `shouldFailOn` "truf" 
@@ -24,7 +24,7 @@ spec = describe "Parser" $ do
 
     describe "parsing strings" $ do
       it "should be able to parse valid strings" $ do
-        let checkStr a b = parse string a `shouldParse` RString b
+        let checkStr a b = parse string a `shouldParse` RavenString b
         checkStr "\"\"" ""
         checkStr "\"a\"" "a"
         checkStr "\"ab\"" "ab"
@@ -32,7 +32,7 @@ spec = describe "Parser" $ do
         checkStr "\"a  b\"" "a  b"
 
       it "should be able to parse escape characters" $ do
-        let checkStr a b = parse string a `shouldParse` RString b
+        let checkStr a b = parse string a `shouldParse` RavenString b
         checkStr "\"a\r\n\t\b\v\\\'b\"" "a\r\n\t\b\v\\\'b"
  
       it "should fail to parse invalid input" $ do
@@ -44,7 +44,7 @@ spec = describe "Parser" $ do
 
     describe "parsing comments" $ do
       it "should be able to parse valid comments" $ do
-        let checkComment a b = parse comment a `shouldParse` RComment b
+        let checkComment a b = parse comment a `shouldParse` RavenComment b
         checkComment ";;" ""
         checkComment ";;a" "a"
         checkComment ";; a" " a"
@@ -59,13 +59,13 @@ spec = describe "Parser" $ do
 
     describe "parsing symbols" $ do
       it "should be able to parse valid symbols" $ do
-        let checkSymbol a b = parse symbol a `shouldParse` RSymbol b
+        let checkSymbol a b = parse symbol a `shouldParse` RavenSymbol b
         checkSymbol "a" "a"
         checkSymbol "ab" "ab"
         checkSymbol "a1" "a1"
         
       it "should be able to parse symbols containing 'extended chars'" $ do
-        parse symbol "a+-.*/<=>!?$%_&^,~" `shouldParse` RSymbol "a+-.*/<=>!?$%_&^,~"
+        parse symbol "a+-.*/<=>!?$%_&^,~" `shouldParse` RavenSymbol "a+-.*/<=>!?$%_&^,~"
         
       it "should fail to parse invalid symbols" $ do
         let checkFailSymbol a = parse symbol `shouldFailOn` a
@@ -78,7 +78,7 @@ spec = describe "Parser" $ do
 
     describe "parsing numbers" $ do
       it "should be able to parse (positive) decimal numbers" $ do
-        let checkInt a b = parse number a `shouldParse` RNumber (Integral b)
+        let checkInt a b = parse number a `shouldParse` RavenNumber (Integral b)
         checkInt "0" 0
         checkInt "1" 1
         checkInt "2" 2
@@ -92,7 +92,7 @@ spec = describe "Parser" $ do
         checkFailInt "a1"
 
       it "should be able to parse hexadecimal numbers" $ do
-        let checkHex a b = parse number a `shouldParse` RNumber (Integral b)
+        let checkHex a b = parse number a `shouldParse` RavenNumber (Integral b)
         checkHex "0x0" 0
         checkHex "0x1" 1
         checkHex "0x2" 2
@@ -112,7 +112,7 @@ spec = describe "Parser" $ do
         --checkFailHex "0x0.1"
         
       it "should be able to parse binary numbers" $ do
-        let checkBin a b = parse number a `shouldParse` RNumber (Integral b)
+        let checkBin a b = parse number a `shouldParse` RavenNumber (Integral b)
         checkBin "0b0" 0
         checkBin "0b1" 1
         checkBin "0b01" 1
@@ -129,7 +129,7 @@ spec = describe "Parser" $ do
         --checkFailBin "0b1.0"
 
       it "should be able to parse rational numbers" $ do
-        let checkRat a b c = parse number a `shouldParse` RNumber (Rational b c)
+        let checkRat a b c = parse number a `shouldParse` RavenNumber (Rational b c)
         checkRat "0/1" 0 1
         checkRat "1/1" 1 1
         checkRat "1/2" 1 2
@@ -144,7 +144,7 @@ spec = describe "Parser" $ do
         --checkFailRat "1 /1"
 
       it "should be able to parse real (floating point) numbers" $ do
-        let checkDouble a b = parse number a `shouldParse` RNumber (Real b)
+        let checkDouble a b = parse number a `shouldParse` RavenNumber (Real b)
         checkDouble "0.0" 0.0
         checkDouble "0.1" 0.1
         checkDouble "1.1" 1.1
@@ -160,7 +160,7 @@ spec = describe "Parser" $ do
         checkFailDouble "-1e3"
   
       it "should be able to parse complex numbers" $ do
-        let checkComplex a b c = parse number a `shouldParse` RNumber (Complex b c)
+        let checkComplex a b c = parse number a `shouldParse` RavenNumber (Complex b c)
         let checkComplexI a b = checkComplex a 0 b
         checkComplexI "0i" 0
         checkComplexI "0.1i" 0.1

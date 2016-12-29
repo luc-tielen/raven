@@ -1,15 +1,15 @@
 
-module Raven.Types ( Expr(..)
+module Raven.Types ( Expression(..)
                    , module Raven.Number
                    ) where
 
 import Raven.Number
 
-data Expr = RBool Bool
-          | RString String
-          | RNumber Number
-          | RComment String
-          | RSymbol String
+data Expression = RavenBool Bool
+                | RavenString String
+                | RavenNumber Number
+                | RavenComment String
+                | RavenSymbol String
   deriving (Eq, Show)
 
 

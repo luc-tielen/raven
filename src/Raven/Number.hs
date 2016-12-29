@@ -1,7 +1,8 @@
 
 -- Helper module for dealing with the numeric tower
 
-module Raven.Number ( Number(..) ) where
+module Raven.Number ( Number(..)
+                    , simplify ) where
 
 import Data.Ratio
 type Numerator = Int
@@ -43,10 +44,10 @@ instance Eq Number where
 
 instance Num Number where
   RavenIntegral a + RavenIntegral b = RavenIntegral $ a + b
-  RavenIntegral a + RavenRational n d = RavenRational (n + a * d) d  -- TODO simplify fraction?
+  RavenIntegral a + RavenRational n d = simplify $ RavenRational (n + a * d) d
   RavenIntegral a + RavenReal b = RavenReal $ (fromIntegral a) + b
   RavenIntegral a + RavenComplex r i = RavenComplex ((fromIntegral a) + r) i
-  RavenRational n1 d1 + RavenRational n2 d2 = RavenRational (n1 * d2 + n2 * d1) (d1 * d2)  -- TODO simplify fraction?
+  RavenRational n1 d1 + RavenRational n2 d2 = simplify $ RavenRational (n1 * d2 + n2 * d1) (d1 * d2)
   RavenRational n d + RavenReal a = RavenReal $ (fromIntegral n / fromIntegral d) + a
   RavenRational n d + RavenComplex r i = RavenComplex ((fromIntegral n / fromIntegral d) + r) i
   RavenReal a + RavenReal b = RavenReal $ a + b
@@ -55,11 +56,11 @@ instance Num Number where
   a + b = b + a  -- fallback case, swaps arguments
 
   RavenIntegral a - RavenIntegral b = RavenIntegral $ a - b
-  RavenIntegral a - RavenRational n d = RavenRational (a * d - n) d  -- TODO simplify fraction?
+  RavenIntegral a - RavenRational n d = simplify $ RavenRational (a * d - n) d
   RavenIntegral a - RavenReal b = RavenReal $ (fromIntegral a) - b
   RavenIntegral a - RavenComplex r i = RavenComplex ((fromIntegral a) - r) (negate i)
-  RavenRational n d - RavenIntegral a = RavenRational (n - a * d) d  -- TODO simplify fraction?
-  RavenRational n1 d1 - RavenRational n2 d2 = RavenRational (n1 * d2 - n2 * d1) (d1 * d2)  -- TODO simplify fraction?
+  RavenRational n d - RavenIntegral a = simplify $ RavenRational (n - a * d) d
+  RavenRational n1 d1 - RavenRational n2 d2 = simplify $ RavenRational (n1 * d2 - n2 * d1) (d1 * d2)
   RavenRational n d - RavenReal a = RavenReal $ (fromIntegral n / fromIntegral d) - a
   RavenRational n d - RavenComplex r i = RavenComplex ((fromIntegral n / fromIntegral d) - r) (negate i)
   RavenReal b - RavenIntegral a = RavenReal $ b - (fromIntegral a)
@@ -72,10 +73,10 @@ instance Num Number where
   RavenComplex r1 i1 - RavenComplex r2 i2 = RavenComplex (r1 - r2) (i1 - i2)
   
   RavenIntegral a * RavenIntegral b = RavenIntegral $ a * b
-  RavenIntegral a * RavenRational n d = RavenRational (a * n) d  -- TODO simplify fraction?
+  RavenIntegral a * RavenRational n d = simplify $ RavenRational (a * n) d
   RavenIntegral a * RavenReal b = RavenReal $ (fromIntegral a) * b
   RavenIntegral a * RavenComplex r i = RavenComplex (a' * r) (a' * i) where a' = fromIntegral a
-  RavenRational n1 d1 * RavenRational n2 d2 = RavenRational (n1 * n2) (d1 * d2)  -- TODO simplify fraction?
+  RavenRational n1 d1 * RavenRational n2 d2 = simplify $ RavenRational (n1 * n2) (d1 * d2)
   RavenRational n d * RavenReal a = RavenReal $ a * (fromIntegral n / fromIntegral d)
   RavenRational n d * RavenComplex r i = RavenComplex (f * r) (f * i) where f = fromIntegral n / fromIntegral d
   RavenReal a * RavenReal b = RavenReal $ a * b
@@ -97,12 +98,12 @@ instance Num Number where
 
 
 instance Fractional Number where
-  RavenIntegral a / RavenIntegral b = RavenRational a b  -- TODO simplify fraction?
-  RavenIntegral a / RavenRational n d = RavenRational (a * d) n  -- TODO simplify fraction?
+  RavenIntegral a / RavenIntegral b = simplify $ RavenRational a b
+  RavenIntegral a / RavenRational n d = simplify $ RavenRational (a * d) n
   RavenIntegral a / RavenReal b = RavenReal $ (fromIntegral a) / b
   RavenIntegral a / RavenComplex r i = RavenComplex (fromIntegral a) 0 / RavenComplex r i
-  RavenRational n d / RavenIntegral a = RavenRational n (a * d)  -- TODO simplify fraction?
-  RavenRational n1 d1 / RavenRational n2 d2 = RavenRational n1 d1 * RavenRational d2 n2  -- TODO simplify fraction?
+  RavenRational n d / RavenIntegral a = simplify $ RavenRational n (a * d)
+  RavenRational n1 d1 / RavenRational n2 d2 = simplify $ RavenRational n1 d1 * RavenRational d2 n2
   RavenRational n d / RavenReal a = RavenReal $ (fromIntegral n / fromIntegral d) / a
   RavenRational n d / RavenComplex r i = RavenComplex (fromIntegral n / fromIntegral d) 0 / RavenComplex r i
   RavenReal b / RavenIntegral a = RavenReal $ b / (fromIntegral a)
@@ -120,8 +121,18 @@ instance Fractional Number where
   recip (RavenRational n d) = RavenRational d n
   recip a = (RavenIntegral 1) / a
 
-  fromRational a = RavenRational n d
+  fromRational a = simplify $ RavenRational n d
     where n = fromInteger $ numerator a
           d = fromInteger $ denominator a
 
   -- TODO comparisons
+
+
+-- Helper functions
+
+simplify :: Number -> Number
+simplify (RavenRational n d)
+  | factor == d = RavenIntegral $ n `quot` factor
+  | otherwise   = RavenRational (n `quot` factor) (d `quot` factor)
+  where factor = gcd n d
+simplify a = a

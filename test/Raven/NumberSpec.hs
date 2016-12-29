@@ -180,7 +180,7 @@ spec = describe "Numerical tower behavior" $ do
     describe "Fractional" $ do
       it "should be possible to divide 2 numbers" $ property $ do
         \a b c n1 d1 n2 d2 r i ->
-          a /= 0 && b /= 0 && c/= 0 && n1 /= 0 && d1 /= 0 && n2 /= 0 && d2/= 0 ==> do
+          a /= 0 && b /= 0 && c/= 0 && n1 /= 0 && d1 /= 0 && n2 /= 0 && d2 /= 0 ==> do
           let a' = fromIntegral a
           let f = (fromIntegral n1 / fromIntegral d1)
           RavenIntegral a / RavenIntegral b `shouldBe` RavenRational a b
@@ -203,7 +203,7 @@ spec = describe "Numerical tower behavior" $ do
 
       it "should be possible to calculate the reciprocal" $ property $ do
         \a b n d r i ->
-          a /= 0 && b /= 0 && n /= 0 && d/= 0 && r /= 0 && i/= 0 ==> do
+          a /= 0 && b /= 0 && n /= 0 && d/= 0 && r /= 0 && i /= 0 ==> do
           recip (RavenIntegral a) `shouldBe` RavenRational 1 a
           recip (RavenRational n d) `shouldBe` RavenRational d n
           recip (RavenReal b) `shouldBe` RavenReal (fromIntegral 1 / b)
@@ -213,3 +213,17 @@ spec = describe "Numerical tower behavior" $ do
         fromRational (1 % 5) `shouldBe` (RavenRational 1 5)
         fromRational (2 % 10) `shouldBe` (RavenRational 1 5)
         fromRational (3 % 10) `shouldBe` (RavenRational 3 10)
+        
+    describe "Simplifying fractions" $ do
+      it "works" $ do
+        let checkSimplify a b c d = simplify (RavenRational a b) `shouldBe` (RavenRational c d)
+        let checkSimplifyOther a = simplify a `shouldBe` a
+        checkSimplify 1 2 1 2
+        checkSimplify 2 1 2 1
+        checkSimplify 2 4 1 2
+        checkSimplify 33 6 11 2
+        checkSimplifyOther (RavenIntegral 1)
+        checkSimplifyOther (RavenReal 1)
+        checkSimplifyOther (RavenComplex 1 1)
+      
+      

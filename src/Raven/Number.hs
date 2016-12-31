@@ -132,6 +132,7 @@ instance Fractional Number where
 
 simplify :: Number -> Number
 simplify (RavenRational n d)
+  | n == d = RavenIntegral 1
   | factor == d = RavenIntegral $ n `quot` factor
   | otherwise   = RavenRational (n `quot` factor) (d `quot` factor)
   where factor = gcd n d

@@ -225,5 +225,6 @@ spec = describe "Numerical tower behavior" $ do
         checkSimplifyOther (RavenIntegral 1)
         checkSimplifyOther (RavenReal 1)
         checkSimplifyOther (RavenComplex 1 1)
-      
+        simplify (RavenRational 1 1) `shouldBe` (RavenIntegral 1)
+        simplify (RavenRational 5 5) `shouldBe` (RavenIntegral 1)
       

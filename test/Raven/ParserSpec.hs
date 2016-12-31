@@ -134,6 +134,7 @@ spec = describe "Parser" $ do
         checkRat "1/1" 1 1
         checkRat "1/2" 1 2
         checkRat "3/2" 3 2
+        checkRat "-3/2" (negate 3) 2
 
       --it "should fail to parse invalid rational numbers" $ do
         --let checkFailRat a = parse number `shouldFailOn` a

@@ -18,6 +18,7 @@ import Text.Megaparsec.String
 import Data.Functor.Identity
 import Data.List (foldl')
 import Data.Char (digitToInt)
+import Data.Maybe
 import Raven.Types
 
 
@@ -59,10 +60,12 @@ integral = RavenNumber . RavenIntegral <$> do
 
 rational :: Parser Expression
 rational = RavenNumber <$> do
+  sign <- optional $ char '-'
   nominator <- some digitChar
   char '/'
   denominator <- some digitChar
-  return $ RavenRational (read nominator) (read denominator)
+  let signChar = fromMaybe ' ' sign
+  return $ RavenRational (read $ signChar : nominator) (read denominator)
 
 real :: Parser Expression
 real = RavenNumber . RavenReal <$> float

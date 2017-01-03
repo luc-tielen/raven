@@ -45,6 +45,49 @@ spec = describe "Numerical tower behavior" $ do
         RavenComplex 1 1 == RavenComplex 1 1 `shouldBe` True
         RavenComplex 1 1 == RavenComplex 1 2 `shouldBe` False
 
+    describe "Ord" $ do
+      it "should be possible to compare various kinds of numbers with each other" $ do
+        let checkCmp a b c = (a `compare` b) `shouldBe` c
+        checkCmp (RavenIntegral 0) (RavenIntegral 0) EQ 
+        checkCmp (RavenIntegral 2) (RavenIntegral 1) GT 
+        checkCmp (RavenIntegral 1) (RavenIntegral 2) LT 
+        checkCmp (RavenIntegral 0) (RavenRational 0 1) EQ 
+        checkCmp (RavenIntegral 0) (RavenRational 1 1) LT 
+        checkCmp (RavenIntegral 2) (RavenRational 3 2) GT 
+        checkCmp (RavenIntegral 0) (RavenReal 0) EQ 
+        checkCmp (RavenIntegral 0) (RavenReal 0.1) LT 
+        checkCmp (RavenIntegral 1) (RavenReal 0.1) GT
+
+        checkCmp (RavenRational 4 1) (RavenIntegral 0) GT 
+        checkCmp (RavenRational 1 1) (RavenIntegral 1) EQ 
+        checkCmp (RavenRational 3 2) (RavenIntegral 2) LT 
+        checkCmp (RavenRational 4 1) (RavenRational 3 2) GT 
+        checkCmp (RavenRational 1 1) (RavenRational 3 3) EQ 
+        checkCmp (RavenRational 3 2) (RavenRational 4 2) LT
+        checkCmp (RavenRational 4 1) (RavenReal 0) GT 
+        checkCmp (RavenRational 1 1) (RavenReal 1) EQ 
+        checkCmp (RavenRational 3 2) (RavenReal 2) LT 
+
+        checkCmp (RavenReal 1) (RavenIntegral 0) GT 
+        checkCmp (RavenReal 1) (RavenIntegral 1) EQ 
+        checkCmp (RavenReal 2) (RavenIntegral 3) LT 
+        checkCmp (RavenReal 1) (RavenRational 1 2) GT 
+        checkCmp (RavenReal 1) (RavenRational 1 1) EQ 
+        checkCmp (RavenReal 2) (RavenRational 7 3) LT
+        checkCmp (RavenReal 1) (RavenReal 0) GT 
+        checkCmp (RavenReal 1) (RavenReal 1) EQ 
+        checkCmp (RavenReal 2) (RavenReal 3) LT
+
+      it "should fail comparing complex numbers with other numbers" $ do
+        let checkCmpFail a b = evaluate (a `compare` b) `shouldThrow` anyException
+        checkCmpFail (RavenIntegral 0) (RavenComplex 0 0)
+        checkCmpFail (RavenRational 0 1) (RavenComplex 0 0)
+        checkCmpFail (RavenReal 0) (RavenComplex 0 0)
+        checkCmpFail (RavenComplex 0 0) (RavenComplex 0 0)
+        checkCmpFail (RavenComplex 0 0) (RavenIntegral 0)
+        checkCmpFail (RavenComplex 0 0) (RavenRational 0 1)
+        checkCmpFail (RavenComplex 0 0) (RavenReal 0)
+        
     describe "Show" $ do
       it "should be possible to display the various numbers as human readable text" $ do
         let checkIntShow a b = show (RavenIntegral a) `shouldBe` b

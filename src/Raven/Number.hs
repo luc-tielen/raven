@@ -42,6 +42,21 @@ instance Eq Number where
   a == b = b == a  -- fallback case, swaps arguments -> ends up in other cases
 
 
+-- TODO: forbid checking ordering on Double (with a 'SafeDouble' type)? or split into partial ord and ord?
+instance Ord Number where
+  RavenIntegral a `compare` RavenIntegral b = a `compare` b
+  RavenIntegral a `compare` RavenRational n d = (a * d) `compare` n
+  RavenIntegral a `compare` RavenReal b = (fromIntegral a) `compare` b
+  RavenRational n d `compare` RavenIntegral a = n `compare` (a * d) 
+  RavenRational n1 d1 `compare` RavenRational n2 d2 = (n1 * d2) `compare` (n2 * d1)
+  RavenRational n d `compare` RavenReal a = (fromIntegral n / fromIntegral d) `compare` a
+  RavenReal a `compare` RavenIntegral b = a `compare` (fromIntegral b)
+  RavenReal a `compare` RavenRational n d = a `compare` (fromIntegral n / fromIntegral d)
+  RavenReal a `compare` RavenReal b = a `compare` b
+  (RavenComplex _ _) `compare` _ = error "Not allowed to compare complex numbers!"
+  _ `compare` (RavenComplex _ _) = error "Not allowed to compare complex numbers!"
+
+
 instance Num Number where
   RavenIntegral a + RavenIntegral b = RavenIntegral $ a + b
   RavenIntegral a + RavenRational n d = simplify $ RavenRational (n + a * d) d
@@ -124,8 +139,6 @@ instance Fractional Number where
   fromRational a = simplify $ RavenRational n d
     where n = fromInteger $ numerator a
           d = fromInteger $ denominator a
-
-  -- TODO comparisons
 
 
 -- Helper functions

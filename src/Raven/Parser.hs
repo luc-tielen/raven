@@ -28,12 +28,12 @@ parse :: Parsec e s a -> s -> Either (ParseError (Token s) e) a
 parse parser stream = Text.Megaparsec.parse parser "" stream
 
 bool :: Parser Expression
-bool = trueExpression <|> falseExpression
+bool = lexeme $ trueExpression <|> falseExpression
   where trueExpression = (stringS "true") >> return (RavenBool True)
         falseExpression = (stringS "false") >> return (RavenBool False)
 
 string :: Parser Expression
-string = RavenString <$> between doubleQuote doubleQuote stringCharacters
+string = lexeme $ RavenString <$> between doubleQuote doubleQuote stringCharacters
   where doubleQuote = char '\"'
         stringCharacters = many $ noneOf "\"" 
 
@@ -41,7 +41,7 @@ comment :: Parser Expression
 comment = RavenComment <$> (stringS ";;" >> (many $ noneOf "\n"))
 
 symbol :: Parser Expression
-symbol = RavenSymbol <$> symbolParser
+symbol = lexeme $ RavenSymbol <$> symbolParser
   where symbolParser = do
           firstChar <- letterChar
           restChars <- many symbolChars
@@ -49,7 +49,7 @@ symbol = RavenSymbol <$> symbolParser
         symbolChars = alphaNumChar <|> oneOf "+-.*/<=>!?$%_&^,~"
 
 integral :: Parser Expression
-integral = RavenNumber . RavenIntegral <$> do
+integral = lexeme $ RavenNumber . RavenIntegral <$> do
   firstPart <- stringS "0x" <|> stringS "0b" <|> some digitChar
   case firstPart of
     "0x" -> do
@@ -61,7 +61,7 @@ integral = RavenNumber . RavenIntegral <$> do
     digits -> return $ read digits
 
 rational :: Parser Expression
-rational = RavenNumber <$> do
+rational = lexeme $ RavenNumber <$> do
   sign <- optional $ char '-'
   nominator <- some digitChar
   char '/'
@@ -70,10 +70,10 @@ rational = RavenNumber <$> do
   return $ RavenRational (read $ signChar : nominator) (read denominator)
 
 real :: Parser Expression
-real = RavenNumber . RavenReal <$> float
+real = lexeme $ RavenNumber . RavenReal <$> float
 
 complex :: Parser Expression
-complex = RavenNumber <$> do
+complex = lexeme $ RavenNumber <$> do
   firstPart <- signedFloatNoScientific <||> signedInteger
   maybeSecondPart <- optional $ signedFloatNoScientific <||> signedInteger
   char 'i'
@@ -90,6 +90,7 @@ complex = RavenNumber <$> do
           return $ units + fractions
         signedInteger = fromIntegral <$> (signed (return ()) integer)
 
+-- TODO fix bugs when parsing invalid numbers (see tests)
 number :: Parser Expression
 number = complex
       <||> real

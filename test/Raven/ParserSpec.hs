@@ -20,6 +20,7 @@ spec = describe "Parser" $ do
         parse bool `shouldFailOn` "truf" 
         parse bool `shouldFailOn` "fals"
         parse bool `shouldFailOn` ""
+        parse bool `shouldFailOn` " "
 
 
     describe "parsing strings" $ do

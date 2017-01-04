@@ -13,8 +13,10 @@ module Raven.Parser ( parse
 import Text.Megaparsec hiding (parse, string, string')
 import qualified Text.Megaparsec (parse, string, string')
 import Text.Megaparsec.Prim hiding (parse)
-import Text.Megaparsec.Lexer as L hiding (number, symbol)
+import Text.Megaparsec.Lexer as L hiding (number, symbol, space, lexeme)
+import qualified Text.Megaparsec.Lexer as L (space, lexeme)
 import Text.Megaparsec.String
+import Control.Applicative (empty)
 import Data.Functor.Identity
 import Data.List (foldl')
 import Data.Char (digitToInt)
@@ -108,3 +110,14 @@ stringI = Text.Megaparsec.string'  -- case insensitive string helper
 
 stringS :: (Token s ~ Char, Text.Megaparsec.Prim.MonadParsec e s m) => String -> m String
 stringS = Text.Megaparsec.string   -- case sensitive string helper
+
+-- White space parser
+ws :: (Token s ~ Char, Text.Megaparsec.Prim.MonadParsec e s m) => m ()
+ws = L.space spaceParser commentParser blockCommentParser
+  where spaceParser = spaceChar >> return ()
+        commentParser = empty
+        blockCommentParser = empty
+
+-- Helper for creating lexemes that consume trailing whitespace
+lexeme :: (Token s ~ Char, Text.Megaparsec.Prim.MonadParsec e s m) => m a -> m a
+lexeme = L.lexeme ws

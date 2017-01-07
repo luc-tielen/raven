@@ -211,5 +211,6 @@ spec = describe "Parser" $ do
         checkFailDefine "(ef a 3)"
         checkFailDefine "(def a)"
         checkFailDefine "(def 3)"
+        checkFailDefine "(def true false)"
 
   -- TODO fix failing test cases (mostly due to lack of end of number indicator: " " or ")")

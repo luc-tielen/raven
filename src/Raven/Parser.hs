@@ -107,12 +107,18 @@ identifier = lexeme $ normalIdentifier <|> peculiarIdentifier
         specialSubsequentChar = oneOf "+-.@"
         peculiarIdentifier = stringS "+" <|> stringS "-" <|> stringS "..."
 
+variable :: Parser Variable
+variable = do
+  notFollowedBy keywords <?> "Not allowed to redefine keywords."  -- Technically this is allowed in R5RS scheme
+  identifier
+  where keywords = choice $ map stringS listOfKeywords
+
 define :: Parser Expression
 define = betweenParens $ do
   lexeme $ stringS "def"
-  id <- identifier
+  var <- variable
   value <- literal
-  return $ RavenDefine id value
+  return $ RavenDefine var value
 
 
 -- Helper functions
@@ -147,3 +153,10 @@ betweenParens :: Parser a -> Parser a
 betweenParens = between openParen closeParen
   where openParen = char '('
         closeParen = char ')'
+
+listOfKeywords :: [String]
+listOfKeywords = [ "def"
+                 , "lambda"
+                 , "true"
+                 , "false"
+                 ]  -- TODO add more keywords while implementing them

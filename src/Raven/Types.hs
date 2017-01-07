@@ -1,15 +1,19 @@
 
-module Raven.Types ( Expression(..)
+module Raven.Types ( Identifier
+                   , Expression(..)
                    , module Raven.Number
                    ) where
 
 import Raven.Number
 
-data Expression = RavenBool Bool
+
+type Identifier = String
+
+data Expression = RavenBool Bool  -- TODO group literals together?
                 | RavenString String
                 | RavenNumber Number
-                | RavenComment String
+                | RavenComment String  -- TODO remove
                 | RavenSymbol String
+                | RavenDefine Identifier Expression
   deriving (Eq, Show)
-
 

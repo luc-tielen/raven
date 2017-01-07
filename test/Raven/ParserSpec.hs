@@ -57,6 +57,28 @@ spec = describe "Parser" $ do
         checkFailComment ";"
         checkFailComment "; ;"
 
+    describe "parsing identifiers" $ do
+      it "should be able to parse valid identifiers" $ do
+        let checkIdent a = parse identifier a `shouldParse` a
+        checkIdent "lambda"
+        checkIdent "list->vector"
+        checkIdent "+"
+        checkIdent "<=?"
+        checkIdent "the-word-recursion-has-many-meanings"
+        checkIdent "q"
+        checkIdent "soup"
+        checkIdent "V17a"
+        checkIdent "a34kTMNs"
+        checkIdent "-"
+        checkIdent "..."
+        checkIdent "a!$%&*+-./:<=>?@^_~"
+
+      it "should fail to parse invalid identifiers" $ do
+        let checkFailIdent a = parse identifier `shouldFailOn` a
+        checkFailIdent "1"
+        checkFailIdent "1.0a"
+        checkFailIdent "."
+        checkFailIdent ".."
 
     describe "parsing symbols" $ do
       it "should be able to parse valid symbols" $ do
@@ -181,5 +203,21 @@ spec = describe "Parser" $ do
         --checkFailComplex "1*1i"
         --checkFailComplex "1/1i"
         --checkFailComplex "0.1e3i"
+
+    describe "parsing defines" $ do
+      it "should be able to parse a valid define expression (no procedure)" $ do
+        let checkDefine a b c = parse define a `shouldParse` RavenDefine b c
+        checkDefine "(def a 3)" "a" (RavenNumber $ RavenIntegral 3)
+        checkDefine "(def b \"test\")" "b" (RavenString "test")
+        checkDefine "(def a true)" "a" (RavenBool True)
+
+      -- TODO parse other form of define
+
+      it "should fail to parse invalid define expression" $ do
+        let checkFailDefine a = parse define `shouldFailOn` a
+        checkFailDefine "def a 3"
+        checkFailDefine "(ef a 3)"
+        checkFailDefine "(def a)"
+        checkFailDefine "(def 3)"
 
   -- TODO fix failing test cases (mostly due to lack of end of number indicator: " " or ")")

@@ -8,6 +8,8 @@ module Raven.Parser ( parse
                     , number
                     , comment
                     , symbol
+                    , identifier
+                    , define
                     ) where
 
 import Text.Megaparsec hiding (parse, string, string')
@@ -97,6 +99,25 @@ number = complex
       <||> rational
       <||> integral
 
+identifier :: Parser Identifier
+identifier = lexeme $ normalIdentifier <|> peculiarIdentifier
+  where normalIdentifier = do
+          initial <- initialChar
+          subsequent <- many subsequentChar
+          return (initial : subsequent)
+        initialChar = letterChar <|> specialInitialChar
+        subsequentChar = initialChar <|> digitChar <|> specialSubsequentChar
+        specialInitialChar = oneOf "!$%&*/:<=>?^_~"
+        specialSubsequentChar = oneOf "+-.@"
+        peculiarIdentifier = stringS "+" <|> stringS "-" <|> stringS "..."
+
+define :: Parser Expression
+define = betweenParens $ do
+  lexeme $ stringS "def"
+  id <- identifier
+  value <- literal
+  return $ RavenDefine id value
+
 
 -- Helper functions
 
@@ -112,6 +133,9 @@ stringI = Text.Megaparsec.string'  -- case insensitive string helper
 stringS :: (Token s ~ Char, Text.Megaparsec.Prim.MonadParsec e s m) => String -> m String
 stringS = Text.Megaparsec.string   -- case sensitive string helper
 
+literal :: Parser Expression
+literal = bool <|> string <|> symbol <|> number  -- TODO add remaining types later...
+
 -- White space parser
 ws :: (Token s ~ Char, Text.Megaparsec.Prim.MonadParsec e s m) => m ()
 ws = L.space spaceParser commentParser blockCommentParser
@@ -122,3 +146,8 @@ ws = L.space spaceParser commentParser blockCommentParser
 -- Helper for creating lexemes that consume trailing whitespace
 lexeme :: (Token s ~ Char, Text.Megaparsec.Prim.MonadParsec e s m) => m a -> m a
 lexeme = L.lexeme ws
+
+betweenParens :: Parser a -> Parser a
+betweenParens = between openParen closeParen
+  where openParen = char '('
+        closeParen = char ')'

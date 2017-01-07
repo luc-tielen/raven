@@ -87,7 +87,18 @@ spec = describe "Parser" $ do
         checkFailSymbol "1\n"
         checkFailSymbol "!"
 
-        -- TODO test to check for overlap with keywords
+    describe "parsing variables" $ do
+      it "should be able to parse valid variables" $ do
+        let checkVar a b = parse variable a `shouldParse` (RavenVariable b)
+        checkVar "a" "a"
+        checkVar "a123" "a123"
+
+      it "should fail to parse invalid variables" $ do
+        let checkFailVar a = parse variable `shouldFailOn` a
+        checkFailVar "lambda"
+        checkFailVar "true"
+        checkFailVar "def"
+        -- TODO check remaining keywords
 
     describe "parsing numbers" $ do
       it "should be able to parse (positive) decimal numbers" $ do
@@ -210,5 +221,22 @@ spec = describe "Parser" $ do
         checkFailDefine "(def a)"
         checkFailDefine "(def 3)"
         checkFailDefine "(def true false)"
+
+    describe "parsing function calls" $ do
+      it "should be able to parse valid function calls" $ do
+        let checkFunc a b c = parse functionCall a `shouldParse` (RavenFunctionCall b c)
+        let op = RavenVariable  -- TODO this should return a procedure/function
+        let int = RavenLiteral . RavenNumber . RavenIntegral
+        checkFunc "(test-func)" (op "test-func") []
+        checkFunc "(print \"test123\")" (op "print") [RavenLiteral . RavenString $ "test123"]
+        checkFunc "(+ 1 2)" (op "+") (map int [1, 2])
+        checkFunc "(- 1 2 3)" (op "-") (map int [1, 2, 3])
+
+      it "should fail to parse invalid function call syntax" $ do
+        let checkFailFunc a = parse functionCall `shouldFailOn` a
+        checkFailFunc "()"
+        checkFailFunc "(test-func"
+        checkFailFunc "test-func)"
+        -- TODO other examples
 
   -- TODO fix failing test cases (mostly due to lack of end of number indicator: " " or ")")

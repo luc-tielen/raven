@@ -1,6 +1,8 @@
 
 module Raven.Types ( Identifier
                    , Variable
+                   , Operator
+                   , Operand
                    , Literal(..)
                    , Expression(..)
                    , module Raven.Number
@@ -11,6 +13,8 @@ import Raven.Number
 
 type Identifier = String
 type Variable = Identifier  -- an identifier that is not a keyword TODO newtype?
+type Operator = Expression
+type Operand  = Expression
 
 -- Literals evaluate to themselves
 data Literal = RavenBool Bool
@@ -20,7 +24,9 @@ data Literal = RavenBool Bool
              -- TODO add quoted representation
              deriving (Eq, Show)
 
-data Expression = RavenLiteral Literal
+data Expression = RavenVariable Variable
+                | RavenLiteral Literal
+                | RavenFunctionCall Operator [Operand]
                 | RavenDefine Variable Expression
                 deriving (Eq, Show)
 

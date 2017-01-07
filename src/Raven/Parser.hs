@@ -6,9 +6,11 @@ module Raven.Parser ( parse
                     , bool
                     , string
                     , number
-                    , symbol
                     , identifier
+                    , variable
+                    , symbol
                     , define
+                    , functionCall
                     ) where
 
 import Text.Megaparsec hiding (parse, string, string')
@@ -106,19 +108,34 @@ symbol = do
   return $ RavenLiteral $ RavenSymbol value
   where quote = char '\''
 
-variable :: Parser Variable
-variable = do
-  notFollowedBy keywords <?> "Not allowed to redefine keywords."  -- Technically this is allowed in R5RS scheme
+variable' :: Parser Variable
+variable' = do
+  notFollowedBy keywords <?> "A variable cannot have a reserved keyword as name."  -- Technically this is allowed in R5RS scheme, but disallowed here
   identifier
   where keywords = choice $ map stringS listOfKeywords
+
+variable :: Parser Expression
+variable = RavenVariable <$> variable'
 
 define :: Parser Expression
 define = betweenParens $ do
   lexeme $ stringS "def"
-  var <- variable
+  var <- variable'
   value <- literal
   return $ RavenDefine var value
 
+functionCall :: Parser Expression
+functionCall = betweenParens $ do
+  op <- expression
+  args <- expression `sepBy` ws
+  return $ RavenFunctionCall op args
+
+expression :: Parser Expression
+expression = variable
+          <|> literal
+          <|> functionCall
+          <|> define
+          -- TODO add rest later
 
 -- Helper functions
 

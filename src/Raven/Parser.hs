@@ -6,7 +6,6 @@ module Raven.Parser ( parse
                     , bool
                     , string
                     , number
-                    , comment
                     , symbol
                     , identifier
                     , define
@@ -38,9 +37,6 @@ string :: Parser Expression
 string = lexeme $ RavenString <$> between doubleQuote doubleQuote stringCharacters
   where doubleQuote = char '\"'
         stringCharacters = many $ noneOf "\"" 
-
-comment :: Parser Expression
-comment = RavenComment <$> (stringS ";;" >> (many $ noneOf "\n"))
 
 symbol :: Parser Expression
 symbol = lexeme $ RavenSymbol <$> symbolParser
@@ -140,7 +136,7 @@ literal = bool <|> string <|> symbol <|> number  -- TODO add remaining types lat
 ws :: (Token s ~ Char, Text.Megaparsec.Prim.MonadParsec e s m) => m ()
 ws = L.space spaceParser commentParser blockCommentParser
   where spaceParser = spaceChar >> return ()
-        commentParser = empty
+        commentParser = skipLineComment ";"
         blockCommentParser = empty
 
 -- Helper for creating lexemes that consume trailing whitespace

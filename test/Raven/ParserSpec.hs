@@ -45,17 +45,9 @@ spec = describe "Parser" $ do
 
     describe "parsing comments" $ do
       it "should be able to parse valid comments" $ do
-        let checkComment a b = parse comment a `shouldParse` RavenComment b
-        checkComment ";;" ""
-        checkComment ";;a" "a"
-        checkComment ";; a" " a"
-        checkComment ";; a\n" " a"
-        
-      it "should fail to parse invalid comments" $ do
-        let checkFailComment a = parse comment `shouldFailOn` a
-        checkFailComment ""
-        checkFailComment ";"
-        checkFailComment "; ;"
+        parse number "1 ; comment\n" `shouldParse` (RavenNumber $ RavenIntegral 1)
+        parse define "(def a ; comment goes here\n 3)" `shouldParse` (RavenDefine "a" (RavenNumber $ RavenIntegral 3))
+        parse number "1 ;; more comments\n" `shouldParse` (RavenNumber $ RavenIntegral 1)
 
     describe "parsing identifiers" $ do
       it "should be able to parse valid identifiers" $ do

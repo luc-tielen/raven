@@ -237,6 +237,25 @@ spec = describe "Parser" $ do
         checkFailFunc "()"
         checkFailFunc "(test-func"
         checkFailFunc "test-func)"
-        -- TODO other examples
+
+    describe "parsing lambdas" $ do
+      it "should be able to parse valid lambdas" $ do
+        let checkFunc a b c = parse lambda a `shouldParse` (RavenFunction $ Function b c)
+        let var = RavenVariable
+        let int = RavenLiteral . RavenNumber . RavenIntegral
+        let func a b = RavenFunctionCall (RavenVariable a) b  -- TODO this should be a procedure
+        checkFunc "(lambda () 1)" [] [int 1]
+        checkFunc "(lambda (a) a)" ["a"] [var "a"]
+        checkFunc "(lambda (a) (test-func) (test-func2))" ["a"] [ func "test-func" []
+                                                                , func "test-func2" []
+                                                                ]
+        checkFunc "(lambda (a b) (+ a b))" ["a", "b"] [func "+" [var "a", var "b"]]
+
+      it "should fail to parse invalid lambda syntax" $ do
+        let checkFailFunc a = parse lambda `shouldFailOn` a
+        checkFailFunc "(lambd () 1)"
+        checkFailFunc "(lambda 1)"
+        checkFailFunc "(lambda ( 1)"
+        checkFailFunc "(lambda ())"
 
   -- TODO fix failing test cases (mostly due to lack of end of number indicator: " " or ")")

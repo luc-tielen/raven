@@ -11,6 +11,7 @@ module Raven.Parser ( parse
                     , symbol
                     , define
                     , functionCall
+                    , lambda
                     ) where
 
 import Text.Megaparsec hiding (parse, string, string')
@@ -130,11 +131,19 @@ functionCall = betweenParens $ do
   args <- expression `sepBy` ws
   return $ RavenFunctionCall op args
 
+lambda :: Parser Expression
+lambda = betweenParens $ do
+  lexeme $ stringS "lambda"
+  args <- lexeme . betweenParens $ variable' `sepBy` ws
+  expressions <- some expression
+  return $ RavenFunction $ Function args expressions
+
 expression :: Parser Expression
-expression = variable
-          <|> literal
+expression = lexeme $ literal
           <|> functionCall
+          <|> lambda
           <|> define
+          <|> variable
           -- TODO add rest later
 
 -- Helper functions

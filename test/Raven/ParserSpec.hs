@@ -13,8 +13,8 @@ spec :: Spec
 spec = describe "Parser" $ do
     describe "parsing bools" $ do
       it "should be able to parse true and false" $ do
-        parse bool "true" `shouldParse` RavenBool True
-        parse bool "false" `shouldParse` RavenBool False
+        parse bool "true" `shouldParse` (RavenLiteral $ RavenBool True)
+        parse bool "false" `shouldParse` (RavenLiteral $ RavenBool False)
 
       it "should fail to parse invalid input" $ do
         parse bool `shouldFailOn` "truf" 
@@ -25,7 +25,7 @@ spec = describe "Parser" $ do
 
     describe "parsing strings" $ do
       it "should be able to parse valid strings" $ do
-        let checkStr a b = parse string a `shouldParse` RavenString b
+        let checkStr a b = parse string a `shouldParse` (RavenLiteral $ RavenString b)
         checkStr "\"\"" ""
         checkStr "\"a\"" "a"
         checkStr "\"ab\"" "ab"
@@ -33,7 +33,7 @@ spec = describe "Parser" $ do
         checkStr "\"a  b\"" "a  b"
 
       it "should be able to parse escape characters" $ do
-        let checkStr a b = parse string a `shouldParse` RavenString b
+        let checkStr a b = parse string a `shouldParse` (RavenLiteral $ RavenString b)
         checkStr "\"a\r\n\t\b\v\\\'b\"" "a\r\n\t\b\v\\\'b"
  
       it "should fail to parse invalid input" $ do
@@ -45,9 +45,9 @@ spec = describe "Parser" $ do
 
     describe "parsing comments" $ do
       it "should be able to parse valid comments" $ do
-        parse number "1 ; comment\n" `shouldParse` (RavenNumber $ RavenIntegral 1)
-        parse define "(def a ; comment goes here\n 3)" `shouldParse` (RavenDefine "a" (RavenNumber $ RavenIntegral 3))
-        parse number "1 ;; more comments\n" `shouldParse` (RavenNumber $ RavenIntegral 1)
+        parse number "1 ; comment\n" `shouldParse` (RavenLiteral . RavenNumber $ RavenIntegral 1)
+        parse define "(def a ; comment goes here\n 3)" `shouldParse` (RavenDefine "a" (RavenLiteral . RavenNumber $ RavenIntegral 3))
+        parse number "1 ;; more comments\n" `shouldParse` (RavenLiteral . RavenNumber $ RavenIntegral 1)
 
     describe "parsing identifiers" $ do
       it "should be able to parse valid identifiers" $ do
@@ -74,13 +74,11 @@ spec = describe "Parser" $ do
 
     describe "parsing symbols" $ do
       it "should be able to parse valid symbols" $ do
-        let checkSymbol a b = parse symbol a `shouldParse` RavenSymbol b
-        checkSymbol "a" "a"
-        checkSymbol "ab" "ab"
-        checkSymbol "a1" "a1"
-        
-      it "should be able to parse symbols containing 'extended chars'" $ do
-        parse symbol "a+-.*/<=>!?$%_&^,~" `shouldParse` RavenSymbol "a+-.*/<=>!?$%_&^,~"
+        let checkSymbol a b = parse symbol a `shouldParse` (RavenLiteral $ RavenSymbol b)
+        checkSymbol "'a" "a"
+        checkSymbol "'ab" "ab"
+        checkSymbol "'a1" "a1"
+        checkSymbol "'a+-.*/<=>!?$%_&^~" "a+-.*/<=>!?$%_&^~"
         
       it "should fail to parse invalid symbols" $ do
         let checkFailSymbol a = parse symbol `shouldFailOn` a
@@ -93,7 +91,7 @@ spec = describe "Parser" $ do
 
     describe "parsing numbers" $ do
       it "should be able to parse (positive) decimal numbers" $ do
-        let checkInt a b = parse number a `shouldParse` RavenNumber (RavenIntegral b)
+        let checkInt a b = parse number a `shouldParse` (RavenLiteral . RavenNumber . RavenIntegral $ b)
         checkInt "0" 0
         checkInt "1" 1
         checkInt "2" 2
@@ -107,7 +105,7 @@ spec = describe "Parser" $ do
         checkFailInt "a1"
 
       it "should be able to parse hexadecimal numbers" $ do
-        let checkHex a b = parse number a `shouldParse` RavenNumber (RavenIntegral b)
+        let checkHex a b = parse number a `shouldParse` (RavenLiteral . RavenNumber . RavenIntegral $ b)
         checkHex "0x0" 0
         checkHex "0x1" 1
         checkHex "0x2" 2
@@ -127,7 +125,7 @@ spec = describe "Parser" $ do
         --checkFailHex "0x0.1"
         
       it "should be able to parse binary numbers" $ do
-        let checkBin a b = parse number a `shouldParse` RavenNumber (RavenIntegral b)
+        let checkBin a b = parse number a `shouldParse` (RavenLiteral . RavenNumber . RavenIntegral $ b)
         checkBin "0b0" 0
         checkBin "0b1" 1
         checkBin "0b01" 1
@@ -144,7 +142,7 @@ spec = describe "Parser" $ do
         --checkFailBin "0b1.0"
 
       it "should be able to parse rational numbers" $ do
-        let checkRat a b c = parse number a `shouldParse` RavenNumber (RavenRational b c)
+        let checkRat a b c = parse number a `shouldParse` (RavenLiteral . RavenNumber $ RavenRational b c)
         checkRat "0/1" 0 1
         checkRat "1/1" 1 1
         checkRat "1/2" 1 2
@@ -160,7 +158,7 @@ spec = describe "Parser" $ do
         --checkFailRat "1 /1"
 
       it "should be able to parse real (floating point) numbers" $ do
-        let checkDouble a b = parse number a `shouldParse` RavenNumber (RavenReal b)
+        let checkDouble a b = parse number a `shouldParse` (RavenLiteral . RavenNumber . RavenReal $ b)
         checkDouble "0.0" 0.0
         checkDouble "0.1" 0.1
         checkDouble "1.1" 1.1
@@ -176,7 +174,7 @@ spec = describe "Parser" $ do
         checkFailDouble "-1e3"
   
       it "should be able to parse complex numbers" $ do
-        let checkComplex a b c = parse number a `shouldParse` RavenNumber (RavenComplex b c)
+        let checkComplex a b c = parse number a `shouldParse` (RavenLiteral . RavenNumber $ RavenComplex b c)
         let checkComplexI a b = checkComplex a 0 b
         checkComplexI "0i" 0
         checkComplexI "0.1i" 0.1
@@ -199,9 +197,9 @@ spec = describe "Parser" $ do
     describe "parsing defines" $ do
       it "should be able to parse a valid define expression (no procedure)" $ do
         let checkDefine a b c = parse define a `shouldParse` RavenDefine b c
-        checkDefine "(def a 3)" "a" (RavenNumber $ RavenIntegral 3)
-        checkDefine "(def b \"test\")" "b" (RavenString "test")
-        checkDefine "(def a true)" "a" (RavenBool True)
+        checkDefine "(def a 3)" "a" (RavenLiteral . RavenNumber . RavenIntegral $ 3)
+        checkDefine "(def b \"test\")" "b" (RavenLiteral . RavenString $ "test")
+        checkDefine "(def a true)" "a" (RavenLiteral . RavenBool $ True)
 
       -- TODO parse other form of define
 

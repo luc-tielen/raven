@@ -30,24 +30,16 @@ parse parser stream = Text.Megaparsec.parse parser "" stream
 
 bool :: Parser Expression
 bool = lexeme $ trueExpression <|> falseExpression
-  where trueExpression = (stringS "true") >> return (RavenBool True)
-        falseExpression = (stringS "false") >> return (RavenBool False)
+  where trueExpression = (stringS "true") >> return (RavenLiteral $ RavenBool True)
+        falseExpression = (stringS "false") >> return (RavenLiteral $ RavenBool False)
 
 string :: Parser Expression
-string = lexeme $ RavenString <$> between doubleQuote doubleQuote stringCharacters
+string = lexeme $ RavenLiteral . RavenString <$> between doubleQuote doubleQuote stringCharacters
   where doubleQuote = char '\"'
         stringCharacters = many $ noneOf "\"" 
 
-symbol :: Parser Expression
-symbol = lexeme $ RavenSymbol <$> symbolParser
-  where symbolParser = do
-          firstChar <- letterChar
-          restChars <- many symbolChars
-          return $ firstChar : restChars
-        symbolChars = alphaNumChar <|> oneOf "+-.*/<=>!?$%_&^,~"
-
 integral :: Parser Expression
-integral = lexeme $ RavenNumber . RavenIntegral <$> do
+integral = lexeme $ RavenLiteral . RavenNumber . RavenIntegral <$> do
   firstPart <- stringS "0x" <|> stringS "0b" <|> some digitChar
   case firstPart of
     "0x" -> do
@@ -59,7 +51,7 @@ integral = lexeme $ RavenNumber . RavenIntegral <$> do
     digits -> return $ read digits
 
 rational :: Parser Expression
-rational = lexeme $ RavenNumber <$> do
+rational = lexeme $ RavenLiteral . RavenNumber <$> do
   sign <- optional $ char '-'
   nominator <- some digitChar
   char '/'
@@ -68,10 +60,10 @@ rational = lexeme $ RavenNumber <$> do
   return $ RavenRational (read $ signChar : nominator) (read denominator)
 
 real :: Parser Expression
-real = lexeme $ RavenNumber . RavenReal <$> float
+real = lexeme $ RavenLiteral . RavenNumber . RavenReal <$> float
 
 complex :: Parser Expression
-complex = lexeme $ RavenNumber <$> do
+complex = lexeme $ RavenLiteral . RavenNumber <$> do
   firstPart <- signedFloatNoScientific <||> signedInteger
   maybeSecondPart <- optional $ signedFloatNoScientific <||> signedInteger
   char 'i'
@@ -106,6 +98,13 @@ identifier = lexeme $ normalIdentifier <|> peculiarIdentifier
         specialInitialChar = oneOf "!$%&*/:<=>?^_~"
         specialSubsequentChar = oneOf "+-.@"
         peculiarIdentifier = stringS "+" <|> stringS "-" <|> stringS "..."
+
+symbol :: Parser Expression
+symbol = do
+  quote
+  value <- identifier
+  return $ RavenLiteral $ RavenSymbol value
+  where quote = char '\''
 
 variable :: Parser Variable
 variable = do

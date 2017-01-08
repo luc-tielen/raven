@@ -212,7 +212,16 @@ spec = describe "Parser" $ do
         checkDefine "(def b \"test\")" "b" (RavenLiteral . RavenString $ "test")
         checkDefine "(def a true)" "a" (RavenLiteral . RavenBool $ True)
 
-      -- TODO parse other form of define
+      it "should be able to parse funcions defined with 'def'" $ do
+        let makeFuncDef b c d = RavenDefine b (RavenFunction $ Function c d)
+        let checkDefine a b c d = parse define a `shouldParse` (makeFuncDef b c d)
+        let int = RavenLiteral . RavenNumber . RavenIntegral
+        let var = RavenVariable
+        let func a b c = RavenFunctionCall (var a) [var b, var c]
+        checkDefine "(def (test-func) 1)" "test-func" [] [int 1]
+        checkDefine "(def (test-func a) a)" "test-func" ["a"] [var "a"]
+        checkDefine "(def (test-func a b) a)" "test-func" ["a", "b"] [var "a"]
+        checkDefine "(def (test-func a b) (+ a b))" "test-func" ["a", "b"] [func "+" "a" "b"]
 
       it "should fail to parse invalid define expression" $ do
         let checkFailDefine a = parse define `shouldFailOn` a
@@ -221,6 +230,10 @@ spec = describe "Parser" $ do
         checkFailDefine "(def a)"
         checkFailDefine "(def 3)"
         checkFailDefine "(def true false)"
+
+        checkFailDefine "(def (test-func 1)"
+        checkFailDefine "(def test-func) 1)"
+        checkFailDefine "(def () 1)"
 
     describe "parsing function calls" $ do
       it "should be able to parse valid function calls" $ do

@@ -121,9 +121,18 @@ variable = RavenVariable <$> variable'
 define :: Parser Expression
 define = betweenParens $ do
   lexeme $ stringS "def"
-  var <- variable'
-  value <- literal
-  return $ RavenDefine var value
+  defineVariable <|> defineFunction
+  where defineVariable = do
+          var <- variable'
+          value <- literal
+          return $ RavenDefine var value
+        defineFunction = do
+          (var, args) <- lexeme . betweenParens $ do
+            var' <- variable'
+            args' <- variable' `sepBy` ws
+            return (var', args')
+          expressions <- some expression
+          return $ RavenDefine var $ makeFunction args expressions
 
 functionCall :: Parser Expression
 functionCall = betweenParens $ do
@@ -136,7 +145,7 @@ lambda = betweenParens $ do
   lexeme $ stringS "lambda"
   args <- lexeme . betweenParens $ variable' `sepBy` ws
   expressions <- some expression
-  return $ RavenFunction $ Function args expressions
+  return $ makeFunction args expressions
 
 expression :: Parser Expression
 expression = lexeme $ literal
@@ -146,13 +155,10 @@ expression = lexeme $ literal
           <|> variable
           -- TODO add rest later
 
--- Helper functions
+-- Parser related helper functions
 
 (<||>) :: Parser a -> Parser a -> Parser a
 a <||> b = try a <|> b
-
-bin2dec :: String -> Int
-bin2dec = foldl' (\acc x -> acc * 2 + digitToInt x) 0
 
 stringI :: (Token s ~ Char, Text.Megaparsec.Prim.MonadParsec e s m) => String -> m String
 stringI = Text.Megaparsec.string'  -- case insensitive string helper
@@ -179,9 +185,18 @@ betweenParens = between openParen closeParen
   where openParen = char '('
         closeParen = char ')'
 
+
+-- General helper functions
+
 listOfKeywords :: [String]
 listOfKeywords = [ "def"
                  , "lambda"
                  , "true"
                  , "false"
                  ]  -- TODO add more keywords while implementing them
+
+bin2dec :: String -> Int
+bin2dec = foldl' (\acc x -> acc * 2 + digitToInt x) 0
+
+makeFunction :: [Variable] -> [Expression] -> Expression
+makeFunction args expressions = RavenFunction $ Function args expressions

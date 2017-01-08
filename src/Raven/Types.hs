@@ -27,7 +27,7 @@ data Literal = RavenBool Bool
              deriving (Eq, Show)
 
 -- This corresponds with a lambda in code
-data Function = Function [Variable] [Expression]
+data Function = Function [Variable] [Expression]  -- TODO add environment
   deriving (Eq, Show)
 
 data Expression = RavenVariable Variable

@@ -13,6 +13,7 @@ module Raven.Parser ( parse
                     , functionCall
                     , lambda
                     , andExpr
+                    , orExpr
                     ) where
 
 import Text.Megaparsec hiding (parse, string, string')
@@ -154,6 +155,12 @@ andExpr = betweenParens $ do
   args <- many expression
   return $ RavenAnd . And $ args
 
+orExpr :: Parser Expression
+orExpr = betweenParens $ do
+  lexeme $ stringS "or"
+  args <- many expression
+  return $ RavenOr . Or $ args
+
 expression :: Parser Expression
 expression = lexeme $ variable
           <|> literal
@@ -161,6 +168,7 @@ expression = lexeme $ variable
           <|> lambda
           <|> define
           <|> andExpr
+          <|> orExpr
           -- TODO add rest later
 
 -- Parser related helper functions
@@ -201,6 +209,8 @@ listOfKeywords = [ "def"
                  , "lambda"
                  , "true"
                  , "false"
+                 , "and"
+                 , "or"
                  ]  -- TODO add more keywords while implementing them
 
 bin2dec :: String -> Int

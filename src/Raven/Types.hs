@@ -6,6 +6,7 @@ module Raven.Types ( Identifier
                    , Literal(..)
                    , Function(..)
                    , AndExpression(..)
+                   , OrExpression(..)
                    , Expression(..)
                    , module Raven.Number
                    ) where
@@ -35,11 +36,16 @@ data Function = Function [Variable] [Expression]  -- TODO add environment
 data AndExpression = And [Expression]
   deriving (Eq, Show)
 
+-- Representation of special form 'or'
+data OrExpression = Or [Expression]
+  deriving (Eq, Show)
+
 data Expression = RavenVariable Variable
                 | RavenLiteral Literal
                 | RavenFunctionCall Operator [Operand]
                 | RavenFunction Function
                 | RavenDefine Variable Expression
                 | RavenAnd AndExpression
+                | RavenOr OrExpression
                 deriving (Eq, Show)
 

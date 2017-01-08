@@ -288,5 +288,24 @@ spec = describe "Parser" $ do
         checkFailAnd "(nd)"
         checkFailAnd "(and"
         checkFailAnd "and)"
+       
+    describe "parsing or expressions" $ do
+      it "should be able to parse valid or expressions" $ do
+        let checkAnd a b = parse orExpr a `shouldParse` (RavenOr $ Or b)
+        let boolean = RavenLiteral . RavenBool
+        let int = RavenLiteral . RavenNumber . RavenIntegral
+        let func a b = RavenFunctionCall (RavenVariable a) b  -- TODO this should be a procedure
+        checkAnd "(or)" []
+        checkAnd "(or true)" [boolean True]
+        checkAnd "(or true true)" [boolean True, boolean True]
+        checkAnd "(or true 1)" [boolean True, int 1]
+        checkAnd "(or true (+ 1 2))" [boolean True, func "+" [int 1, int 2]]
+
+      it "should fail to parse invalid or expressions" $ do
+        let checkFailAnd a = parse orExpr `shouldFailOn` a
+        checkFailAnd "(r)"
+        checkFailAnd "(or"
+        checkFailAnd "or)"
         
+ 
   -- TODO fix failing test cases (mostly due to lack of end of number indicator: " " or ")")

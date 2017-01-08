@@ -306,6 +306,22 @@ spec = describe "Parser" $ do
         checkFailAnd "(r)"
         checkFailAnd "(or"
         checkFailAnd "or)"
+
+    describe "parsing begin expressions" $ do
+      it "should be able to parse valid begin expressions" $ do
+        let checkBegin a b = parse begin a `shouldParse` (RavenBegin $ Begin b)
+        let func a b = RavenFunctionCall (RavenVariable a) b
+        let int = RavenLiteral . RavenNumber . RavenIntegral
+        checkBegin "(begin (f1))" [func "f1" []]
+        checkBegin "(begin (f1) (f2))" [func "f1" [], func "f2" []]
+        checkBegin "(begin 1 (f1))" [int 1, func "f1" []]
+        checkBegin "(begin (f1) 1)" [func "f1" [], int 1]
+
+      it "should fail to parse invalid begin expressions" $ do
+        let checkFailBegin a = parse begin `shouldFailOn` a
+        checkFailBegin "(begi)"
+        checkFailBegin "(begin)"
+        checkFailBegin "(begin ())"
         
  
   -- TODO fix failing test cases (mostly due to lack of end of number indicator: " " or ")")

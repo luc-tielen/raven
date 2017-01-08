@@ -14,6 +14,7 @@ module Raven.Parser ( parse
                     , lambda
                     , andExpr
                     , orExpr
+                    , begin
                     ) where
 
 import Text.Megaparsec hiding (parse, string, string')
@@ -161,6 +162,12 @@ orExpr = betweenParens $ do
   args <- many expression
   return $ RavenOr . Or $ args
 
+begin :: Parser Expression
+begin = betweenParens $ do
+  lexeme $ stringS "begin"
+  expressions <- some expression
+  return $ RavenBegin . Begin $ expressions
+
 expression :: Parser Expression
 expression = lexeme $ variable
           <|> literal
@@ -169,6 +176,7 @@ expression = lexeme $ variable
           <|> define
           <|> andExpr
           <|> orExpr
+          <|> begin
           -- TODO add rest later
 
 -- Parser related helper functions
@@ -211,6 +219,7 @@ listOfKeywords = [ "def"
                  , "false"
                  , "and"
                  , "or"
+                 , "begin"
                  ]  -- TODO add more keywords while implementing them
 
 bin2dec :: String -> Int

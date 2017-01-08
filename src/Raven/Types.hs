@@ -7,6 +7,7 @@ module Raven.Types ( Identifier
                    , Function(..)
                    , AndExpression(..)
                    , OrExpression(..)
+                   , BeginExpression(..)
                    , Expression(..)
                    , module Raven.Number
                    ) where
@@ -40,6 +41,10 @@ data AndExpression = And [Expression]
 data OrExpression = Or [Expression]
   deriving (Eq, Show)
 
+-- Representation of special form 'begin'
+data BeginExpression = Begin [Expression]
+  deriving (Eq, Show)
+
 data Expression = RavenVariable Variable
                 | RavenLiteral Literal
                 | RavenFunctionCall Operator [Operand]
@@ -47,5 +52,6 @@ data Expression = RavenVariable Variable
                 | RavenDefine Variable Expression
                 | RavenAnd AndExpression
                 | RavenOr OrExpression
+                | RavenBegin BeginExpression
                 deriving (Eq, Show)
 

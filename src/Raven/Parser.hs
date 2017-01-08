@@ -12,6 +12,7 @@ module Raven.Parser ( parse
                     , define
                     , functionCall
                     , lambda
+                    , andExpr
                     ) where
 
 import Text.Megaparsec hiding (parse, string, string')
@@ -147,12 +148,19 @@ lambda = betweenParens $ do
   expressions <- some expression
   return $ makeFunction args expressions
 
+andExpr :: Parser Expression
+andExpr = betweenParens $ do
+  lexeme $ stringS "and"
+  args <- many expression
+  return $ RavenAnd . And $ args
+
 expression :: Parser Expression
-expression = lexeme $ literal
+expression = lexeme $ variable
+          <|> literal
           <|> functionCall
           <|> lambda
           <|> define
-          <|> variable
+          <|> andExpr
           -- TODO add rest later
 
 -- Parser related helper functions

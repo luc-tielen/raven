@@ -271,4 +271,22 @@ spec = describe "Parser" $ do
         checkFailFunc "(lambda ( 1)"
         checkFailFunc "(lambda ())"
 
+    describe "parsing and expressions" $ do
+      it "should be able to parse valid and expressions" $ do
+        let checkAnd a b = parse andExpr a `shouldParse` (RavenAnd $ And b)
+        let boolean = RavenLiteral . RavenBool
+        let int = RavenLiteral . RavenNumber . RavenIntegral
+        let func a b = RavenFunctionCall (RavenVariable a) b  -- TODO this should be a procedure
+        checkAnd "(and)" []
+        checkAnd "(and true)" [boolean True]
+        checkAnd "(and true true)" [boolean True, boolean True]
+        checkAnd "(and true 1)" [boolean True, int 1]
+        checkAnd "(and true (+ 1 2))" [boolean True, func "+" [int 1, int 2]]
+
+      it "should fail to parse invalid and expressions" $ do
+        let checkFailAnd a = parse andExpr `shouldFailOn` a
+        checkFailAnd "(nd)"
+        checkFailAnd "(and"
+        checkFailAnd "and)"
+        
   -- TODO fix failing test cases (mostly due to lack of end of number indicator: " " or ")")

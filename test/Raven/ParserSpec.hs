@@ -322,6 +322,21 @@ spec = describe "Parser" $ do
         checkFailBegin "(begi)"
         checkFailBegin "(begin)"
         checkFailBegin "(begin ())"
+
+    describe "parsing assignments" $ do
+      it "should be possible to parse valid assignment expressions" $ do
+        let int = RavenLiteral . RavenNumber . RavenIntegral
+        let str = RavenLiteral . RavenString
+        let checkAssign a b c = parse assignment a `shouldParse` (RavenAssign $ Assign (b) c)
+        checkAssign "(set! a 3)" "a" (int 3)
+        checkAssign "(set! b \"123456789\")" "b" (str "123456789")
+
+      it "should fail to parse invalid assignment expressions" $ do
+        let checkFailAssign a = parse assignment `shouldFailOn` a
+        checkFailAssign "(set!)"
+        checkFailAssign "(set! a)"
+        checkFailAssign "(set! 3)"
+        checkFailAssign "(set! 3 3)"
         
  
   -- TODO fix failing test cases (mostly due to lack of end of number indicator: " " or ")")

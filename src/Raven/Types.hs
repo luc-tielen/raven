@@ -5,6 +5,7 @@ module Raven.Types ( Identifier
                    , Operand
                    , Literal(..)
                    , Function(..)
+                   , Assignment(..)
                    , AndExpression(..)
                    , OrExpression(..)
                    , BeginExpression(..)
@@ -33,6 +34,9 @@ data Literal = RavenBool Bool
 data Function = Function [Variable] [Expression]  -- TODO add environment
   deriving (Eq, Show)
 
+data Assignment = Assign Variable Expression
+  deriving (Eq, Show)
+
 -- Representation of special form 'and'
 data AndExpression = And [Expression]
   deriving (Eq, Show)
@@ -49,6 +53,7 @@ data Expression = RavenVariable Variable
                 | RavenLiteral Literal
                 | RavenFunctionCall Operator [Operand]
                 | RavenFunction Function
+                | RavenAssign Assignment
                 | RavenDefine Variable Expression
                 | RavenAnd AndExpression
                 | RavenOr OrExpression

@@ -12,6 +12,7 @@ module Raven.Parser ( parse
                     , define
                     , functionCall
                     , lambda
+                    , assignment
                     , andExpr
                     , orExpr
                     , begin
@@ -168,11 +169,19 @@ begin = betweenParens $ do
   expressions <- some expression
   return $ RavenBegin . Begin $ expressions
 
+assignment :: Parser Expression
+assignment = betweenParens $ do
+  lexeme $ stringS "set!"
+  var <- variable'
+  expr <- expression
+  return $ RavenAssign $ Assign var expr
+
 expression :: Parser Expression
 expression = lexeme $ variable
           <|> literal
           <|> functionCall
           <|> lambda
+          <|> assignment
           <|> define
           <|> andExpr
           <|> orExpr

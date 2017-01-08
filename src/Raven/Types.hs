@@ -5,6 +5,7 @@ module Raven.Types ( Identifier
                    , Operand
                    , Literal(..)
                    , Function(..)
+                   , IfExpression(..)
                    , Assignment(..)
                    , AndExpression(..)
                    , OrExpression(..)
@@ -20,7 +21,8 @@ type Identifier = String
 type Variable = Identifier  -- an identifier that is not a keyword TODO newtype?
 type Operator = Expression
 type Operand  = Expression
-
+type TrueClause = Expression
+type FalseClause = Maybe Expression
 
 -- Literals evaluate to themselves
 data Literal = RavenBool Bool
@@ -32,6 +34,9 @@ data Literal = RavenBool Bool
 
 -- This corresponds with a lambda in code
 data Function = Function [Variable] [Expression]  -- TODO add environment
+  deriving (Eq, Show)
+
+data IfExpression = If Expression TrueClause FalseClause
   deriving (Eq, Show)
 
 data Assignment = Assign Variable Expression
@@ -53,6 +58,7 @@ data Expression = RavenVariable Variable
                 | RavenLiteral Literal
                 | RavenFunctionCall Operator [Operand]
                 | RavenFunction Function
+                | RavenIf IfExpression
                 | RavenAssign Assignment
                 | RavenDefine Variable Expression
                 | RavenAnd AndExpression

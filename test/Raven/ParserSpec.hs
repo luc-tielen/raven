@@ -334,9 +334,28 @@ spec = describe "Parser" $ do
       it "should fail to parse invalid assignment expressions" $ do
         let checkFailAssign a = parse assignment `shouldFailOn` a
         checkFailAssign "(set!)"
+        checkFailAssign "(set!x a 3)"
         checkFailAssign "(set! a)"
         checkFailAssign "(set! 3)"
         checkFailAssign "(set! 3 3)"
+
+    describe "parsing if expressions" $ do
+      it "should be possible to parse valid if expressions" $ do
+        let checkIf a b = parse ifExpr a `shouldParse` b
+        let int = RavenLiteral . RavenNumber . RavenIntegral
+        let boolean = RavenLiteral . RavenBool
+        let str = RavenLiteral . RavenString
+        checkIf "(if true 1)" (RavenIf (If (boolean True) (int 1) Nothing))
+        checkIf "(if true 1 2)" (RavenIf (If (boolean True) (int 1) (Just (int 2))))
+        let func = RavenFunctionCall (RavenVariable "test-func") []
+        checkIf "(if \"test\" (test-func))" (RavenIf (If (str "test") func Nothing))
+
+      it "should fail to parse invalid if expressions" $ do
+        let checkFailIf a = parse ifExpr `shouldFailOn` a
+        checkFailIf "(if)"
+        checkFailIf "(if () true)"
+        checkFailIf "(if true)"
+        checkFailIf "(iff true 1)"
         
  
   -- TODO fix failing test cases (mostly due to lack of end of number indicator: " " or ")")

@@ -12,6 +12,7 @@ module Raven.Parser ( parse
                     , define
                     , functionCall
                     , lambda
+                    , ifExpr
                     , assignment
                     , andExpr
                     , orExpr
@@ -151,6 +152,21 @@ lambda = betweenParens $ do
   expressions <- some expression
   return $ makeFunction args expressions
 
+ifExpr :: Parser Expression
+ifExpr = betweenParens $ do
+  stringS "if "
+  test <- expression
+  ifClause <- expression
+  elseClause <- optional expression
+  return $ RavenIf $ If test ifClause elseClause
+
+assignment :: Parser Expression
+assignment = betweenParens $ do
+  lexeme $ stringS "set!"
+  var <- variable'
+  expr <- expression
+  return $ RavenAssign $ Assign var expr
+
 andExpr :: Parser Expression
 andExpr = betweenParens $ do
   lexeme $ stringS "and"
@@ -169,18 +185,12 @@ begin = betweenParens $ do
   expressions <- some expression
   return $ RavenBegin . Begin $ expressions
 
-assignment :: Parser Expression
-assignment = betweenParens $ do
-  lexeme $ stringS "set!"
-  var <- variable'
-  expr <- expression
-  return $ RavenAssign $ Assign var expr
-
 expression :: Parser Expression
 expression = lexeme $ variable
           <|> literal
           <|> functionCall
           <|> lambda
+          <|> ifExpr
           <|> assignment
           <|> define
           <|> andExpr
@@ -229,6 +239,8 @@ listOfKeywords = [ "def"
                  , "and"
                  , "or"
                  , "begin"
+                 , "set!"
+                 , "if"
                  ]  -- TODO add more keywords while implementing them
 
 bin2dec :: String -> Int

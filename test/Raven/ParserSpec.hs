@@ -356,6 +356,20 @@ spec = describe "Parser" $ do
         checkFailIf "(if () true)"
         checkFailIf "(if true)"
         checkFailIf "(iff true 1)"
-        
+
+    describe "parsing delay expressions" $ do
+      it "should be able to parse valid delay expressions" $ do
+        let checkDelay a b = parse delay a `shouldParse` b
+        let int = RavenLiteral . RavenNumber . RavenIntegral
+        let boolean = RavenLiteral . RavenBool
+        checkDelay "(delay 1)" (RavenDelay (int 1))
+        checkDelay "(delay true)" (RavenDelay (boolean True))
+
+      it "should fail to parse invalid delay expressions" $ do
+        let checkFailDelay a = parse delay `shouldFailOn` a
+        checkFailDelay "(delay"
+        checkFailDelay "delay)"
+        checkFailDelay "(delay)"
+        checkFailDelay "(delayy (+ 1 2))"
  
   -- TODO fix failing test cases (mostly due to lack of end of number indicator: " " or ")")

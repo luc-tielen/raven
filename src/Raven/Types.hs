@@ -64,5 +64,6 @@ data Expression = RavenVariable Variable
                 | RavenAnd AndExpression
                 | RavenOr OrExpression
                 | RavenBegin BeginExpression
+                | RavenDelay Expression
                 deriving (Eq, Show)
 

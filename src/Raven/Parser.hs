@@ -17,6 +17,7 @@ module Raven.Parser ( parse
                     , andExpr
                     , orExpr
                     , begin
+                    , delay
                     ) where
 
 import Text.Megaparsec hiding (parse, string, string')
@@ -185,6 +186,12 @@ begin = betweenParens $ do
   expressions <- some expression
   return $ RavenBegin . Begin $ expressions
 
+delay :: Parser Expression
+delay = betweenParens $ do
+  lexeme $ stringS "delay"
+  expr <- expression
+  return $ RavenDelay expr
+
 expression :: Parser Expression
 expression = lexeme $ variable
           <|> literal
@@ -196,6 +203,7 @@ expression = lexeme $ variable
           <|> andExpr
           <|> orExpr
           <|> begin
+          <|> delay
           -- TODO add rest later
 
 -- Parser related helper functions
@@ -239,6 +247,7 @@ listOfKeywords = [ "def"
                  , "and"
                  , "or"
                  , "begin"
+                 , "delay"
                  , "set!"
                  , "if"
                  ]  -- TODO add more keywords while implementing them

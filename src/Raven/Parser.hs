@@ -14,6 +14,7 @@ module Raven.Parser ( parse
                     , lambda
                     , ifExpr
                     , cond
+                    , caseExpr
                     , assignment
                     , andExpr
                     , orExpr
@@ -163,6 +164,11 @@ ifExpr = betweenParens $ do
   elseClause <- optional expression
   return $ RavenIf $ If test ifClause elseClause
 
+elseClause :: Parser [Expression]
+elseClause = betweenParens $ do
+  lexeme $ stringS "else"
+  some expression
+
 cond :: Parser Expression
 cond = betweenParens $ do
   lexeme $ stringS "cond"
@@ -182,9 +188,25 @@ cond = betweenParens $ do
           lexeme $ stringS "=>"
           recipient <- expression
           return $ [expr, RavenFunctionCall recipient [expr]]
-        elseClause = betweenParens $ do
-          lexeme $ stringS "else"
-          some expression
+
+caseExpr :: Parser Expression
+caseExpr = betweenParens $ do
+  lexeme $ stringS "case"
+  expr <- expression
+  caseClauses <- many caseClause
+  if caseClauses == []
+    then do elseClause' <- elseClause
+            return $ RavenCase $ Case expr caseClauses elseClause'
+    else do elseClause' <- optional elseClause
+            let elseClause'' = fromMaybe [] elseClause'
+            return $ RavenCase $ Case expr caseClauses elseClause''
+  where caseClause = do
+          notFollowedBy elseClause
+          lexeme $ betweenParens caseClause'
+        caseClause' = do
+          datums <- lexeme . betweenParens $ many expression  -- TODO change to datum!
+          expressions <- some expression
+          return (datums, expressions)
 
 assignment :: Parser Expression
 assignment = betweenParens $ do
@@ -225,6 +247,7 @@ expression = lexeme
           <||> lambda
           <||> ifExpr
           <||> cond
+          <||> caseExpr
           <||> assignment
           <||> define
           <||> andExpr
@@ -279,6 +302,7 @@ listOfKeywords = [ "def"
                  , "if"
                  , "else"
                  , "cond"
+                 , "case"
                  ]  -- TODO add more keywords while implementing them
 
 bin2dec :: String -> Int

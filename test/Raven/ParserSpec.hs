@@ -403,6 +403,30 @@ spec = describe "Parser" $ do
         checkFailCond "(cond (else))"
         checkFailCond "(cond (else 1) (true))"
 
+    describe "parsing case expressions" $ do
+      it "should be able to parse valid case expressions" $ do
+        let checkCase a b = parse caseExpr a `shouldParse` b
+        let caseExpr' a b c = RavenCase $ Case a b c
+        let boolean = RavenLiteral . RavenBool
+        let int = RavenLiteral . RavenNumber . RavenIntegral
+        checkCase "(case 1 ((1) 2))" (caseExpr' (int 1) [([int 1], [int 2])] [])
+        checkCase "(case 1 ((1) 2 3))" (caseExpr' (int 1) [([int 1], [int 2, int 3])] [])
+        checkCase "(case 1 ((1) 2) ((3) 4))" (caseExpr' (int 1) [([int 1], [int 2]), ([int 3], [int 4])] [])
+        checkCase "(case 1 ((1) 2) ((3) 4) (else 5))" (caseExpr' (int 1) [([int 1], [int 2]), ([int 3], [int 4])] [int 5])
+        checkCase "(case 2 ((1 2) 3))" (caseExpr' (int 2) [([int 1, int 2], [int 3])] [])
+        checkCase "(case 1 (else 2))" (caseExpr' (int 1) [] [int 2])
+        checkCase "(case 1 (else 2 3))" (caseExpr' (int 1) [] [int 2, int 3])
 
+      it "should fail to parse invalid case expressions" $ do
+        let checkFailCase a = parse caseExpr `shouldFailOn` a
+        checkFailCase "(case)"
+        checkFailCase "(case 1)"
+        checkFailCase "(case 1 ())"
+        checkFailCase "(case 1 ((1) ))"
+        checkFailCase "(cas 1 ((1) 2))"
+        checkFailCase "(case 1 ((1) 1)"
+        checkFailCase "case 1 ((1) 1))"
+        checkFailCase "(case (else 1))"
+        checkFailCase "(case 1 (else))"
 
   -- TODO fix failing test cases (mostly due to lack of end of number indicator: " " or ")")

@@ -20,6 +20,7 @@ module Raven.Parser ( parse
                     , orExpr
                     , begin
                     , delay
+                    , doExpr
                     ) where
 
 import Text.Megaparsec hiding (parse, string, string')
@@ -239,6 +240,24 @@ delay = betweenParens $ do
   expr <- expression
   return $ RavenDelay expr
 
+doExpr :: Parser Expression
+doExpr = betweenParens $ do
+  lexeme $ stringS "do"
+  doInit <- lexeme . betweenParens $ many iterationSpec
+  doTest <- lexeme . betweenParens $ doTest'
+  doCommands <- many expression
+  return $ RavenDo $ Do doInit doTest doCommands
+  where iterationSpec = lexeme . betweenParens $ do
+          var <- variable
+          init <- expression
+          step <- optional expression
+          let step' = fromMaybe var step
+          return (var, init, step')
+        doTest' = do
+          test <- expression
+          doResult <- many expression
+          return (test, doResult)
+
 expression :: Parser Expression
 expression = lexeme
            $   variable
@@ -254,6 +273,7 @@ expression = lexeme
           <||> orExpr
           <||> begin
           <||> delay
+          <||> doExpr
           -- TODO add rest later
 
 -- Parser related helper functions
@@ -303,6 +323,7 @@ listOfKeywords = [ "def"
                  , "else"
                  , "cond"
                  , "case"
+                 , "do"
                  ]  -- TODO add more keywords while implementing them
 
 bin2dec :: String -> Int

@@ -12,6 +12,7 @@ module Raven.Types ( Identifier
                    , AndExpression(..)
                    , OrExpression(..)
                    , BeginExpression(..)
+                   , DoExpression(..)
                    , Expression(..)
                    , module Raven.Number
                    ) where
@@ -23,12 +24,16 @@ type Identifier = String
 type Variable = Identifier  -- an identifier that is not a keyword TODO newtype?
 type Operator = Expression
 type Operand  = Expression
+type TestExpression = Expression
 type TrueClause = Expression
 type FalseClause = Maybe Expression
 type CondClause = [Expression]
 type ElseClause = [Expression]
 type CaseMatchList = [Expression]
 type CaseClause = (CaseMatchList, [Expression])
+type VariableExpression = Expression
+type DoInitExpression = Expression
+type DoStepExpression = Expression
 
 
 -- Literals evaluate to themselves
@@ -44,7 +49,7 @@ data Function = Function [Variable] [Expression]  -- TODO add environment
   deriving (Eq, Show)
 
 -- Representation of special form 'if'
-data IfExpression = If Expression TrueClause FalseClause
+data IfExpression = If TestExpression TrueClause FalseClause
   deriving (Eq, Show)
 
 -- Representation of special form 'cond'
@@ -71,6 +76,13 @@ data OrExpression = Or [Expression]
 data BeginExpression = Begin [Expression]
   deriving (Eq, Show)
 
+-- Representation of special form 'do'
+type DoSetup = [(VariableExpression, DoInitExpression, DoStepExpression)]
+type DoTest = (TestExpression, [Expression])
+type DoCommand = [Expression]
+data DoExpression = Do DoSetup DoTest DoCommand
+  deriving (Eq, Show)
+
 data Expression = RavenVariable Variable
                 | RavenLiteral Literal
                 | RavenFunctionCall Operator [Operand]
@@ -84,5 +96,6 @@ data Expression = RavenVariable Variable
                 | RavenOr OrExpression
                 | RavenBegin BeginExpression
                 | RavenDelay Expression
+                | RavenDo DoExpression
                 deriving (Eq, Show)
 

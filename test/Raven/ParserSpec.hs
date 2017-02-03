@@ -429,4 +429,37 @@ spec = describe "Parser" $ do
         checkFailCase "(case (else 1))"
         checkFailCase "(case 1 (else))"
 
+    describe "parsing do expressions" $ do
+      it "should be able to parse valid do expressions" $ do
+        let checkDo a b = parse doExpr a `shouldParse` b
+        let doExpr' a b c = RavenDo $ Do a b c
+        let boolean = RavenLiteral . RavenBool
+        let int = RavenLiteral . RavenNumber . RavenIntegral
+        let var = RavenVariable
+        let func a b = RavenFunctionCall (var a) b
+        checkDo "(do () (true))" (doExpr' [] (boolean True, []) [])
+        checkDo "(do () (true 1))" (doExpr' [] (boolean True, [int 1]) [])
+        checkDo "(do () (true 1 2))" (doExpr' [] (boolean True, [int 1, int 2]) [])
+        checkDo "(do ((a 1)) (true))" (doExpr' [(var "a", int 1, var "a")] (boolean True, []) [])
+        checkDo "(do ((a 1 (+ a 1))) (true))" (doExpr' [(var "a", int 1, func "+" [var "a", int 1])] (boolean True, []) [])
+        checkDo "(do ((a 1) (b 2)) (true))" (doExpr' [(var "a", int 1, var "a"), (var "b", int 2, var "b")] (boolean True, []) [])
+        checkDo "(do () (true 1))" (doExpr' [] (boolean True, [int 1]) [])
+        checkDo "(do () (true 1 2))" (doExpr' [] (boolean True, [int 1, int 2]) [])
+        checkDo "(do () (true) 1)" (doExpr' [] (boolean True, []) [int 1])
+        checkDo "(do () (true) 1 2)" (doExpr' [] (boolean True, []) [int 1, int 2])
+
+      it "should fail to parse invalid do expressions" $ do
+        let checkFailDo a = parse doExpr `shouldFailOn` a
+        checkFailDo "(do)"
+        checkFailDo "(do ())"
+        checkFailDo "(do () ())"
+        checkFailDo "(d () (true))"
+        checkFailDo "(do () (true ()))"
+        checkFailDo "(do (a) (true))"
+        checkFailDo "(do (true))"
+        checkFailDo "(do () true)"
+
+
+
+
   -- TODO fix failing test cases (mostly due to lack of end of number indicator: " " or ")")

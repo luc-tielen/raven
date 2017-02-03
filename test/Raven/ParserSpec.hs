@@ -35,7 +35,7 @@ spec = describe "Parser" $ do
       it "should be able to parse escape characters" $ do
         let checkStr a b = parse string a `shouldParse` (RavenLiteral $ RavenString b)
         checkStr "\"a\r\n\t\b\v\\\'b\"" "a\r\n\t\b\v\\\'b"
- 
+
       it "should fail to parse invalid input" $ do
         let checkFailStr a = parse string `shouldFailOn` a
         checkFailStr ""
@@ -79,7 +79,7 @@ spec = describe "Parser" $ do
         checkSymbol "'ab" "ab"
         checkSymbol "'a1" "a1"
         checkSymbol "'a+-.*/<=>!?$%_&^~" "a+-.*/<=>!?$%_&^~"
-        
+
       it "should fail to parse invalid symbols" $ do
         let checkFailSymbol a = parse symbol `shouldFailOn` a
         checkFailSymbol "1"
@@ -134,7 +134,7 @@ spec = describe "Parser" $ do
         checkFailHex "0x.1"
         --checkFailHex "0x1.0"
         --checkFailHex "0x0.1"
-        
+
       it "should be able to parse binary numbers" $ do
         let checkBin a b = parse number a `shouldParse` (RavenLiteral . RavenNumber . RavenIntegral $ b)
         checkBin "0b0" 0
@@ -143,7 +143,7 @@ spec = describe "Parser" $ do
         checkBin "0b10" 2
         checkBin "0b11" 3
         checkBin "0b1000" 8
-        
+
       it "should fail to parse invalid binary numbers" $ do
         let checkFailBin a = parse number `shouldFailOn` a
         checkFailBin "0b"
@@ -183,7 +183,7 @@ spec = describe "Parser" $ do
         checkFailDouble "a.1"
         checkFailDouble ".a1"
         checkFailDouble "-1e3"
-  
+
       it "should be able to parse complex numbers" $ do
         let checkComplex a b c = parse number a `shouldParse` (RavenLiteral . RavenNumber $ RavenComplex b c)
         let checkComplexI a b = checkComplex a 0 b
@@ -288,7 +288,7 @@ spec = describe "Parser" $ do
         checkFailAnd "(nd)"
         checkFailAnd "(and"
         checkFailAnd "and)"
-       
+
     describe "parsing or expressions" $ do
       it "should be able to parse valid or expressions" $ do
         let checkAnd a b = parse orExpr a `shouldParse` (RavenOr $ Or b)
@@ -371,5 +371,38 @@ spec = describe "Parser" $ do
         checkFailDelay "delay)"
         checkFailDelay "(delay)"
         checkFailDelay "(delayy (+ 1 2))"
- 
+
+    describe "parsing cond expressions" $ do
+      it "should be able to parse valid cond expressions" $ do
+        let checkCond a b = parse cond a `shouldParse` b
+        let condExpr a b = RavenCond $ Cond a b
+        let boolean = RavenLiteral . RavenBool
+        let int = RavenLiteral . RavenNumber . RavenIntegral
+        let var = RavenVariable
+        let func a b = RavenFunctionCall (var a) b
+        let listFunc = func "list" [int 1, int 2]
+        let lambdaFunc a = RavenFunctionCall (RavenFunction (Function ["x"] [var "x"])) a
+        checkCond "(cond (true))" (condExpr [[boolean True]] [])
+        checkCond "(cond (true 1))" (condExpr [[boolean True, int 1]] [])
+        checkCond "(cond (else 1))" (condExpr [] [int 1])
+        checkCond "(cond (false 1) (true 2))" (condExpr [[boolean False, int 1], [boolean True, int 2]] [])
+        checkCond "(cond (false 1) (false 2) (else 3))" (condExpr [[boolean False, int 1], [boolean False, int 2]] [int 3])
+        checkCond "(cond ((list 1 2) => car))" (condExpr [[listFunc, func "car" [listFunc]]] [])
+        checkCond "(cond (1 => (lambda (x) x)))" (condExpr [[int 1, lambdaFunc [int 1]]] [])
+
+      it "should fail to parse invalid cond expressions" $ do
+        let checkFailCond a = parse cond `shouldFailOn` a
+        checkFailCond "(cond)"
+        checkFailCond "(cond ())"
+        checkFailCond "(cnd (true))"
+        checkFailCond "(cond (true)"
+        checkFailCond "cond (true))"
+        checkFailCond "cond (true))"
+        checkFailCond "(cond ((list 1 2) =>)"
+        checkFailCond "(cond (=> (list 1 2))"
+        checkFailCond "(cond (else))"
+        checkFailCond "(cond (else 1) (true))"
+
+
+
   -- TODO fix failing test cases (mostly due to lack of end of number indicator: " " or ")")

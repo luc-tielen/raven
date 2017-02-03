@@ -13,6 +13,7 @@ module Raven.Parser ( parse
                     , functionCall
                     , lambda
                     , ifExpr
+                    , cond
                     , assignment
                     , andExpr
                     , orExpr
@@ -117,7 +118,7 @@ symbol = do
 
 variable' :: Parser Variable
 variable' = do
-  notFollowedBy keywords <?> "A variable cannot have a reserved keyword as name."  -- Technically this is allowed in R5RS scheme, but disallowed here
+  notFollowedBy keywords <?> "A variable cannot have a reserved keyword as name"  -- Technically this is allowed in R5RS scheme, but disallowed here
   identifier
   where keywords = choice $ map stringS listOfKeywords
 
@@ -155,11 +156,35 @@ lambda = betweenParens $ do
 
 ifExpr :: Parser Expression
 ifExpr = betweenParens $ do
-  stringS "if "
+  stringS "if"
+  spaceChar
   test <- expression
   ifClause <- expression
   elseClause <- optional expression
   return $ RavenIf $ If test ifClause elseClause
+
+cond :: Parser Expression
+cond = betweenParens $ do
+  lexeme $ stringS "cond"
+  condClauses <- many condClause
+  if condClauses == []
+    then do elseClause' <- elseClause
+            return $ RavenCond $ Cond condClauses elseClause'
+    else do elseClause' <- optional elseClause
+            let elseClause'' = fromMaybe [] elseClause'
+            return $ RavenCond $ Cond condClauses elseClause''
+  where condClause = do
+          notFollowedBy elseClause
+          lexeme $ betweenParens condClause'
+        condClause' = condClauseWithArrow <||> some expression
+        condClauseWithArrow = do
+          expr <- expression
+          lexeme $ stringS "=>"
+          recipient <- expression
+          return $ [expr, RavenFunctionCall recipient [expr]]
+        elseClause = betweenParens $ do
+          lexeme $ stringS "else"
+          some expression
 
 assignment :: Parser Expression
 assignment = betweenParens $ do
@@ -193,17 +218,19 @@ delay = betweenParens $ do
   return $ RavenDelay expr
 
 expression :: Parser Expression
-expression = lexeme $ variable
-          <|> literal
-          <|> functionCall
-          <|> lambda
-          <|> ifExpr
-          <|> assignment
-          <|> define
-          <|> andExpr
-          <|> orExpr
-          <|> begin
-          <|> delay
+expression = lexeme
+           $   variable
+          <||> literal
+          <||> functionCall
+          <||> lambda
+          <||> ifExpr
+          <||> cond
+          <||> assignment
+          <||> define
+          <||> andExpr
+          <||> orExpr
+          <||> begin
+          <||> delay
           -- TODO add rest later
 
 -- Parser related helper functions
@@ -250,6 +277,8 @@ listOfKeywords = [ "def"
                  , "delay"
                  , "set!"
                  , "if"
+                 , "else"
+                 , "cond"
                  ]  -- TODO add more keywords while implementing them
 
 bin2dec :: String -> Int
